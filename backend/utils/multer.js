@@ -1,4 +1,6 @@
 import multer from "multer";
+import path from "path";
+import fs from "fs/promises";
 
 // Configure storage
 const storage = multer.diskStorage({
@@ -9,5 +11,20 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
-
 export const upload = multer({ storage });
+
+
+
+
+
+
+export const deleteFile = async (filePath) => {
+  try {
+    const absolutePath = path.resolve(filePath);
+    await fs.unlink(absolutePath);
+    console.log("File deleted:", absolutePath);
+  } catch (err) {
+    console.error("Error deleting file:", err.message);
+  }
+};
+

@@ -3,53 +3,69 @@ import bcrypt from "bcryptjs";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { generateToken } from "../utils/jwt.js";
 import { sendWelcomeEmail } from "../emails/EmailHandler.js";
+import { deleteFile } from "../utils/multer.js";
+
+
 
 export const signup = async (req, res) => {
-    try {
-        const { fullName, email, password } = req.body;
+  try {
+    const { fullName, email, password } = req.body;
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: "User already exists" });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 = salt rounds
-
-        let profilePicUrl = null;
-
-        if (req.file) {
-            const cloudinaryRes = await uploadToCloudinary(req.file.path);
-            console.log(cloudinaryRes)
-            profilePicUrl = cloudinaryRes.url;
-        }
-
-        const newUser = await User.create({
-            email,
-            password: hashedPassword,
-            fullName,
-            profilePic: profilePicUrl,
-        });
-
-        try {
-          await sendWelcomeEmail(newUser.email, newUser.fullName, process.env.CLIENT_URL)
-        } catch (error) {
-          console.log("email sending error from signup endpoint", error.message)
-        }
-
-        res.status(201).json({
-            message: "User created successfully, and Email Sent Successfully",
-            user: {
-                id: newUser._id,
-                fullName: newUser.fullName,
-                email: newUser.email,
-                profilePic: newUser.profilePic,
-            },
-        });
-    } catch (error) {
-        console.log("SignUp error:", error.message);
-        res.status(500).json({ message: error.message || "Internal Server Error" });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    let profilePicUrl = null;
+    let profilePicPublicId = null;
+
+    if (req.file) {
+      const cloudinaryRes = await uploadToCloudinary(req.file.path);
+      profilePicUrl = cloudinaryRes.url;
+      profilePicPublicId = cloudinaryRes.public_id; // keep full public_id
+
+      // delete local file after upload
+      deleteFile(req.file.path);
+    }
+
+    const newUser = await User.create({
+      email,
+      password: hashedPassword,
+      fullName,
+      profilePic: profilePicUrl,
+      profilePicPublicId: profilePicPublicId,
+    });
+
+    try {
+      await sendWelcomeEmail(
+        newUser.email,
+        newUser.fullName,
+        process.env.CLIENT_URL
+      );
+    } catch (error) {
+      console.log("email sending error from signup endpoint", error.message);
+    }
+
+    res.status(201).json({
+      message: "User created successfully, and Email Sent Successfully",
+      user: {
+        id: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        profilePic: newUser.profilePic,
+        profilePicPublicId: newUser.profilePicPublicId?.split("/").pop() || null, // strip only for response
+      },
+    });
+  } catch (error) {
+    console.log("SignUp error:", error.message);
+    res
+      .status(500)
+      .json({ message: error.message || "Internal Server Error" });
+  }
 };
+
 
 
 export const loginUser = async (req, res) => {
@@ -95,7 +111,7 @@ export const loginUser = async (req, res) => {
 };
 
 
-export const logoutUser = async(req, res) =>{
+export const logoutUser = async (req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,

@@ -1,4 +1,4 @@
-import express from "express"
+import express, { urlencoded } from "express"
 import dotenv from "dotenv"
 import connectDB from "./database/Db.js"
 import cors from "cors"
@@ -15,6 +15,7 @@ app.use(cors({
 
 app.use(express.json())
 app.use(cookieParser())
+app.use(urlencoded({extended: true}))
 
 app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)

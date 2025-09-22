@@ -1,8 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 
-dotenv.config()
-
+dotenv.config();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -19,7 +18,7 @@ export const uploadToCloudinary = async (filePath, folder = "chat-app") => {
     });
     return {
       url: result.secure_url,
-      public_id: result.public_id,
+      public_id: result.public_id, // keep folder + id
     };
   } catch (error) {
     console.error("Cloudinary Upload Error:", error);
