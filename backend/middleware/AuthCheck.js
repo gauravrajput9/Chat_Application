@@ -5,15 +5,15 @@ export const isAuthenticated = async (req, res, next) => {
     try {
         const { token } = req.cookies;
         if (!token) {
-            return res.status(401).json({ message: "No token provided" });
+            return res.status(401).json({ message: "Unauthorized" });
         }
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
 
-        const user = await User.findById(decodedToken.id);
+        const user = await User.findById(decodedToken.id).select("-password");
         if (!user) {
-            return res.status(404).json({ message: "Invalid Token" });
+            return res.status(404).json({ message: "Unauthorized" });
         }
 
         req.user = user;

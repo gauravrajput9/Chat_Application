@@ -20,12 +20,13 @@ app.use(urlencoded({extended: true}))
 app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)
 
-connectDB()
+
 
 app.get("/", (req, res) =>{
     res.send("Hello")
 })
 
-app.listen(3000, () =>{
+app.listen(3000, async() =>{
+    await connectDB()
     console.log("Server Running on Port : 3000")
 })

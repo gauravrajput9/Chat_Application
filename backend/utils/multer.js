@@ -22,7 +22,6 @@ export const deleteFile = async (filePath) => {
   try {
     const absolutePath = path.resolve(filePath);
     await fs.unlink(absolutePath);
-    console.log("File deleted:", absolutePath);
   } catch (err) {
     console.error("Error deleting file:", err.message);
   }
