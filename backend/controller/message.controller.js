@@ -1,0 +1,116 @@
+import mongoose from "mongoose";
+import { User } from "../models/user.model.js";
+import Message from "../models/message.model.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
+
+
+export const getAllContacts = async (req, res) => {
+    try {
+        const loggedInUserId = req.user.id;
+
+        if (!mongoose.Types.ObjectId.isValid(loggedInUserId)) {
+            return res.status(400).json({ error: "Invalid user ID" });
+        }
+
+        const contacts = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
+
+        if (!contacts || contacts.length === 0) {
+            return res.status(404).json({ message: "No contacts found" });
+        }
+
+        res.status(200).json({
+            message: "Contacts found successfully",
+            users: contacts,
+        });
+    } catch (error) {
+        console.error("Fetching all contacts error:", error);
+        res.status(500).json({ error: error.message || "Internal Server Error" });
+    }
+};
+
+
+export const getAllMessages = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { id: messageToSendId } = req.params;
+
+        const messages = await Message.find({
+            $or: [
+                { senderId: userId, receiverId: messageToSendId },
+                { senderId: messageToSendId, receiverId: userId },
+            ],
+        });
+
+        res.status(200).json({
+            message: "Messages fetched successfully",
+            messages,
+        });
+    } catch (error) {
+        console.error("Getting messages error:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+};
+
+
+export const sendMessage = async (req, res) => {
+    try {
+        const { text } = req.body;
+        const image = req.file ? req.file.path : null;
+        const { id: receiverId } = req.params;
+        const senderId = req.user.id;
+
+        let imageUrl;
+        if (image) {
+            const cloudinaryRes = await uploadToCloudinary(image);
+            imageUrl = cloudinaryRes.url;
+        }
+
+        const newMessage = await Message.create({
+            receiverId,
+            senderId,
+            image: imageUrl,
+            text,
+        });
+
+        res.status(201).json({
+            message: "Message sent successfully",
+            newMessage,
+        });
+    } catch (error) {
+        console.error("Message sending Error:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+};
+
+export const getChatParteners = async (req, res) => {
+    try {
+        const loggedInUserId = req.user.id;
+
+        const messages = await Message.find({
+            $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }],
+        });
+
+        const chatPartenerIds = [
+            ...new Set(
+                messages.map((msg) =>
+                    msg.senderId.toString() === loggedInUserId.toString()
+                        ? msg.receiverId.toString()
+                        : msg.senderId.toString()
+                )
+            ),
+        ];
+
+        if (chatPartenerIds.length === 0) {
+            return res.status(404).json({ message: "No chat partners found" });
+        }
+
+        const chatParteners = await User.find({
+            _id: { $in: chatPartenerIds },
+        }).select("-password");
+
+        res.status(200).json({ chatParteners });
+    } catch (error) {
+        console.error("Chat Partener error:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+};

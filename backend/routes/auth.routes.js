@@ -5,7 +5,7 @@ import { isAuthenticated } from "../middleware/AuthCheck.js"
 import {arcjetProtection} from "../middleware/arcjet.middleware.js"
 
 const authRouter = express.Router()
-authRouter.use(arcjetProtection)
+// authRouter.use(arcjetProtection)
 
 authRouter.post("/signup", upload.single("profilePic"), signup)
 authRouter.post("/login", loginUser)
