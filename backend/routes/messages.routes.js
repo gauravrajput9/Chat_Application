@@ -5,7 +5,7 @@ import { upload } from "../utils/multer.js"
 import { arcjetProtection } from "../middleware/arcjet.middleware.js"
 
 const messageRouter = express.Router()
-// messageRouter.use(arcjetProtection,isAuthenticated)
+messageRouter.use(arcjetProtection,isAuthenticated)
 
 messageRouter.get("/getAllContacts", getAllContacts)
 messageRouter.get("/chats", getChatParteners)
