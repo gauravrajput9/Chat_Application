@@ -1,0 +1,35 @@
+# .coderabbit.yaml
+review:
+  level: deep            # deep analysis for detailed suggestions
+  style: detailed        # CodeRabbit explains "why" and "how" to fix
+  focus:
+    - security           # check for XSS, SQL injection, JWT handling, etc.
+    - performance        # detect slow code, unnecessary re-renders
+    - readability        # improve naming, formatting, structure
+    - best-practices     # JS/TS, React, Node, MongoDB conventions
+    - maintainability    # modular code, smaller functions
+  ignore:
+    - node_modules/**    # skip dependencies
+    - dist/**            # skip build output
+    - .next/**           # skip Next.js build cache
+    - coverage/**        # skip test coverage output
+    - tests/**           # skip test files unless you want review
+    - public/**          # static files
+
+rules:
+  javascript:
+    max-function-lines: 50         # warn if function > 50 lines
+    no-console-log: true           # flag console.log in prod code
+    prefer-const: true             # suggest const when possible
+    no-dead-code: true             # detect unused imports/vars
+  react:
+    enforce-hooks-rules: true      # check React Hooks rules
+    check-dependencies: true       # ensure correct useEffect deps
+    no-inline-styles: false        # allow inline styles if needed
+  node:
+    async-error-handling: true     # check async/await error handling
+    input-validation: true         # suggest validation for APIs
+    prevent-hardcoded-secrets: true # warn on API keys, secrets
+  mongodb:
+    index-check: true              # suggest indexes for frequent queries
+    injection-check: true          # flag potential injection risks
