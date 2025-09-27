@@ -1,7 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 
 export default function Home() {
+  const authUser = useAuthStore((state) => state.authUser);
   return (
     <div className="bg-gradient-to-r from-[#0f172a] to-[#1e1b4b] text-white">
       {/* Hero Section */}
@@ -14,20 +16,31 @@ export default function Home() {
           <p className="mt-6 text-lg text-gray-300">
             Connect with friends anytime, anywhere. Secure, fast, and reliable.
           </p>
-          <div className="mt-8 flex space-x-4">
-            <Link
-              to="/signup"
-              className="px-6 py-3 bg-teal-500 hover:bg-teal-600 rounded-lg font-semibold transition"
-            >
-              Get Started
-            </Link>
-            <Link
-              to="/login"
-              className="px-6 py-3 border border-teal-400 rounded-lg font-semibold hover:bg-teal-400/10 transition"
-            >
-              Login
-            </Link>
-          </div>
+          {!authUser ? (
+            <div className="mt-8 flex space-x-4">
+              <Link
+                to="/signup"
+                className="px-6 py-3 bg-teal-500 hover:bg-teal-600 rounded-lg font-semibold transition"
+              >
+                Get Started
+              </Link>
+              <Link
+                to="/login"
+                className="px-6 py-3 border border-teal-400 rounded-lg font-semibold hover:bg-teal-400/10 transition"
+              >
+                Login
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-8 flex space-x-4">
+              <Link
+                to="/chat"
+                className="px-6 py-3 bg-teal-500 hover:bg-teal-600 rounded-lg font-semibold transition"
+              >
+                Start Chatting...
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Right illustration */}

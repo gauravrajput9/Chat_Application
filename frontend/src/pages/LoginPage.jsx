@@ -1,21 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { loginUser } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import Loader from "../components/Loader.jsx";
 
 export default function Login() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { setAuthUser, authUser } = useAuthStore();
   const [loginUserData, setLoginUserData] = useState({
     email: "",
     password: "",
   });
 
+  console.log(authUser)
+
   const { isError, isPending, mutate } = useMutation({
-    mutationFn: (userData) => loginUser(userData), 
+    mutationFn: (userData) => loginUser(userData),
     onSuccess: (data) => {
-      console.log(data);
-      console.log("Login successful");
-      navigate("/")
+      setAuthUser(data);
+      navigate("/");
     },
     onError: (error) => {
       console.log("Login error: ", error);
@@ -24,12 +28,17 @@ export default function Login() {
 
   const handleLoginFormSubmit = (e) => {
     e.preventDefault();
-    console.log(loginUserData);
     mutate(loginUserData);
   };
 
+  useEffect(() =>{
+    if(authUser){
+    navigate("/")
+  }
+  },[authUser, navigate])
+
   if (isPending) {
-    return <div>Loading...</div>;
+    return <Loader/>;
   }
 
   if (isError) {
