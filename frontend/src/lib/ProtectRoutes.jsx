@@ -4,8 +4,7 @@ import { useAuthStore } from "../store/authStore.js";
 
 const ProtectedRoute = ({ children }) => {
   const { authUser } = useAuthStore();
-  console.log("ProtectedRoute - authUser:", authUser);
-
+  
   if (!authUser) {
     return <Navigate to="/login"  />;
   }

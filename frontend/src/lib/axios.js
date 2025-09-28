@@ -15,3 +15,13 @@ export const logoutUser = async () =>{
     const res = await axiosInstance.get("/auth/logout")
     return res.data
 }
+
+export const updateUser = async (data) =>{
+    const res = await axiosInstance.post("/user/update-profile", data)
+    return res.data
+}
+
+export const signUpUser = async (data) =>{
+    const res = await axiosInstance.post("/auth/signup", data)
+    return res.data
+}

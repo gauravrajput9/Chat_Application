@@ -4,6 +4,7 @@ import { loginUser } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import Loader from "../components/Loader.jsx";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,16 +14,19 @@ export default function Login() {
     password: "",
   });
 
-  console.log(authUser)
+  console.log(authUser);
 
   const { isError, isPending, mutate } = useMutation({
     mutationFn: (userData) => loginUser(userData),
     onSuccess: (data) => {
       setAuthUser(data);
+      toast.success("Login successful!");
       navigate("/");
     },
     onError: (error) => {
       console.log("Login error: ", error);
+      const message = error.response?.data?.message || "Login failed!";
+      navigate("/error", { state: { message } });
     },
   });
 
@@ -31,14 +35,14 @@ export default function Login() {
     mutate(loginUserData);
   };
 
-  useEffect(() =>{
-    if(authUser){
-    navigate("/")
-  }
-  },[authUser, navigate])
+  useEffect(() => {
+    if (authUser) {
+      navigate("/");
+    }
+  }, [authUser, navigate]);
 
   if (isPending) {
-    return <Loader/>;
+    return <Loader />;
   }
 
   if (isError) {
