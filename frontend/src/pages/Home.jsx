@@ -37,7 +37,7 @@ export default function Home() {
                 to="/chat"
                 className="px-6 py-3 bg-teal-500 hover:bg-teal-600 rounded-lg font-semibold transition"
               >
-                Start Chatting...
+                Start Chatting
               </Link>
             </div>
           )}

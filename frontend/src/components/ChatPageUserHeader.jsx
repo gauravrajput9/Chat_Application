@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { LogOut, Volume2, VolumeX, Camera, Loader2 } from "lucide-react";
 import useChatStore from "../store/useChatStore";
 import { useAuthStore } from "../store/authStore";
@@ -12,6 +12,7 @@ const mouseClickSound = new Audio("/sounds/mouse-Click.mp3");
 const ChatPageUserHeader = () => {
   const navigate = useNavigate();
 
+  const setSelectedUser = useChatStore((state) => state.setSelectedUser);
   const [selectedImage, setSelectedImg] = React.useState(null);
   const [previousImage, setPreviousImage] = React.useState(null);
   const fileInputRef = useRef(null);
@@ -38,6 +39,7 @@ const ChatPageUserHeader = () => {
       .catch((err) => console.error("Logout failed:", err));
   };
 
+  // handle the update user mutation, for updating profile picture
   const UpdateUserMutation = useMutation({
     mutationFn: (formData) => updateUser(formData),
     onSuccess: (data) => {
@@ -66,6 +68,17 @@ const ChatPageUserHeader = () => {
 
     UpdateUserMutation.mutate(formData);
   };
+
+  // use the escape key to close the chat
+  useEffect(() => {
+    const handleEscapePress = (e) => {
+      if (e.key === "Escape") {
+        setSelectedUser(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscapePress);
+  });
 
   return (
     <div className="flex items-center justify-between bg-slate-700 p-3 rounded-xl shadow">
