@@ -25,3 +25,10 @@ export const signUpUser = async (data) =>{
     const res = await axiosInstance.post("/auth/signup", data)
     return res.data
 }
+
+//messages api calls
+
+export const getAllContacts = async() =>{
+    const res = await axiosInstance.get("/message/getAllContacts")
+    return res.data;
+}

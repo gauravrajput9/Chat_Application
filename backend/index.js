@@ -15,9 +15,9 @@ app.use(cors({
   credentials: true,               // allow cookies/headers
 }));
 
-app.use(express.json())
+app.use(express.json({ limit: "10mb" }))
+app.use(urlencoded({ extended: true, limit: "10mb" }))
 app.use(cookieParser())
-app.use(urlencoded({extended: true}))
 
 app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)

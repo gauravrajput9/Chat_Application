@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { logoutUser } from "../lib/axios";
+import { toast } from "react-toastify";
 
 export default function Navbar() {
   const authUser = useAuthStore((state) => state.authUser);
@@ -24,6 +25,7 @@ export default function Navbar() {
     logoutUser()
       .then(() => {
         navigate("/login");
+        toast.success("Logged out successfully");
         setAuthUser(null)
       })
       .catch((err) => {

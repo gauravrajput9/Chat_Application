@@ -9,7 +9,7 @@ export const updateProfile = async (req, res) => {
    try {
       const { email, fullName } = req.body;
       const profilePic = req.file ? req.file.path : null;
-
+      
       const existingUser = await User.findById(req.user.id);
 
       if (!existingUser) {

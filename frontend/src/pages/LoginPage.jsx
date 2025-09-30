@@ -14,8 +14,6 @@ export default function Login() {
     password: "",
   });
 
-  console.log(authUser);
-
   const { isError, isPending, mutate } = useMutation({
     mutationFn: (userData) => loginUser(userData),
     onSuccess: (data) => {
