@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { setAuthUser, authUser } = useAuthStore();
+  const { setAuthUser, authUser, connectSocket } = useAuthStore();
   const [loginUserData, setLoginUserData] = useState({
     email: "",
     password: "",
@@ -19,6 +19,7 @@ export default function Login() {
     onSuccess: (data) => {
       setAuthUser(data);
       toast.success("Login successful!");
+      connectSocket()
       navigate("/");
     },
     onError: (error) => {

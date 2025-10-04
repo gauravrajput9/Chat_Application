@@ -3,9 +3,11 @@ import { useMutation } from "@tanstack/react-query";
 import { signUpUser } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useAuthStore } from "../store/authStore";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const connectSocket = useAuthStore((state) => state.connectSocket);
 
   const [signUpData, setSignUpData] = React.useState({
     fullName: "",
@@ -19,6 +21,7 @@ export default function Signup() {
     onSuccess: (data) => {
       console.log("User signed up successfully:", data);
       toast.success("Signup successful! Please log in.");
+      connectSocket()
       navigate("/login"); 
     },
     onError: (error) => {

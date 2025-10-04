@@ -17,11 +17,10 @@ const ChatPageUserHeader = () => {
   const [previousImage, setPreviousImage] = React.useState(null);
   const fileInputRef = useRef(null);
 
-  const isSoundEnabled = useChatStore((state) => state.isSoundEnabled);
-  const toggleSound = useChatStore((state) => state.toggleSound);
+  const { isSoundEnabled, toggleSound } = useChatStore();
 
-  const authUser = useAuthStore((state) => state.authUser);
-  const setAuthUser = useAuthStore((state) => state.setAuthUser);
+  const { authUser, disconnectSocket, setAuthUser, onlineUsers } =
+    useAuthStore();
 
   const [username, setUserName] = React.useState(
     authUser?.user?.fullName || "User"
@@ -35,6 +34,7 @@ const ChatPageUserHeader = () => {
         navigate("/login");
         toast.success("Logged out successfully");
         setAuthUser(null);
+        disconnectSocket();
       })
       .catch((err) => console.error("Logout failed:", err));
   };
@@ -80,6 +80,8 @@ const ChatPageUserHeader = () => {
     window.addEventListener("keydown", handleEscapePress);
   });
 
+  const isOnline = onlineUsers?.includes(authUser?.user?._id);
+
   return (
     <div className="flex items-center justify-between bg-slate-700 p-3 rounded-xl shadow">
       {/* Avatar + Username */}
@@ -105,6 +107,12 @@ const ChatPageUserHeader = () => {
           ) : (
             <Camera className="text-white w-6 h-6" />
           )}
+
+          {/* Online Green Dot */}
+          {isOnline && (
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-700 rounded-full"></span>
+          )}
+
           <input
             type="file"
             accept="image/*"
@@ -113,9 +121,16 @@ const ChatPageUserHeader = () => {
             onChange={handleImageUpload}
           />
         </div>
-        <span className="font-semibold text-white">
-          {username || authUser?.user?.fullName || "User"}
-        </span>
+
+        {/* Username + Online text */}
+        <div className="flex flex-col">
+          <span className="font-semibold text-white">
+            {username || authUser?.user?.fullName || "User"}
+          </span>
+          {isOnline && (
+            <span className="text-green-400 text-sm font-medium">Online</span>
+          )}
+        </div>
       </div>
 
       {/* Controls */}

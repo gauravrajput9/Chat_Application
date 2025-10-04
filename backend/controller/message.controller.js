@@ -85,20 +85,30 @@ export const sendMessage = async (req, res) => {
 export const getChatParteners = async (req, res) => {
     try {
         const loggedInUserId = req.user.id;
+        console.log("Getting chat partners for user:", loggedInUserId);
 
         const messages = await Message.find({
             $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }],
         });
+        
+        console.log("Found messages:", messages.length);
 
         const chatPartenerIds = [
             ...new Set(
-                messages.map((msg) =>
-                    msg.senderId.toString() === loggedInUserId.toString()
-                        ? msg.receiverId.toString()
-                        : msg.senderId.toString()
-                )
+                messages
+                    .map((msg) => {
+                        if (msg.senderId.toString() === loggedInUserId.toString()) {
+                            return msg.receiverId.toString();
+                        } else if (msg.receiverId.toString() === loggedInUserId.toString()) {
+                            return msg.senderId.toString();
+                        }
+                        return null; // This shouldn't happen given our query, but safety check
+                    })
+                    .filter(id => id !== null && id !== loggedInUserId.toString()) // Remove nulls and logged-in user
             ),
         ];
+        
+        console.log("Chat partner IDs:", chatPartenerIds);
 
         if (chatPartenerIds.length === 0) {
             return res.status(404).json({ message: "No chat partners found" });

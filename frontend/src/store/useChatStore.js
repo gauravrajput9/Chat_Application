@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { axiosInstance } from "../lib/axios"
 import { toast } from "react-toastify"
+import { useAuthStore } from "./authStore"
 
 const useChatStore = create((set, get) => ({
     allContacts: [],
@@ -34,33 +35,73 @@ const useChatStore = create((set, get) => ({
         }
     },
 
-    setAllChats:async () =>{
-        set({isUsersLoading: true})
+    setAllChats: async () => {
+        set({ isUsersLoading: true })
         try {
             const res = await axiosInstance.get("/message/chats")
-            set({chats: res.data})
+            set({ chats: res.data })
         } catch (error) {
             console.log("Chat Fetching error from Store: ", error.message)
             toast.error("Error Fetching The Chats")
         }
-        finally{
-            set({isUsersLoading: false})
+        finally {
+            set({ isUsersLoading: false })
         }
     },
 
-    getMessagesByUserId: async (userId) =>{
-        set({isMessagesLoading: true})
+    getMessagesByUserId: async (userId) => {
+        set({ isMessagesLoading: true })
         try {
             const res = await axiosInstance.get(`/message/${userId}`)
-            console.log(res.data)
-            set({messages: res.data.messages})
+            set({ messages: res.data.messages })
         } catch (error) {
             console.log("Error fetching the chats: ", error.message)
             toast.error("Something Went Wrong")
-        }finally{
-            set({isMessagesLoading: false})
+        } finally {
+            set({ isMessagesLoading: false })
+        }
+    },
+
+    sendMessage: async (data, receiverId) => {
+        const { messages } = get();
+        const { authUser } = useAuthStore.getState();
+
+        const text = data.get("text");
+        const image = data.get("image");
+
+        const tempId = `temp-${Date.now()}`;
+        const optimisticMessage = {
+            _id: tempId,
+            senderId: authUser?.user._id,
+            receiverId,
+            text,
+            image, 
+            createdAt: new Date().toISOString(),
+            isOptimistic: true,
+        };
+
+        set({ messages: [...messages, optimisticMessage] });
+
+        try {
+            const res = await axiosInstance.post(`/message/send/${receiverId}`, data);
+            const newMessage = res.data.newMessage;
+
+            set({
+                messages: get().messages.map((msg) =>
+                    msg._id === tempId ? newMessage : msg
+                ),
+            });
+        } catch (error) {
+            set({
+                messages: get().messages.filter((msg) => msg._id !== tempId),
+            });
+            console.error("Message Sending Error", error.message);
+            toast.error(error.message);
         }
     }
+
+
+
 }))
 
 export default useChatStore

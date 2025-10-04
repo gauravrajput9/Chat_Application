@@ -6,13 +6,14 @@ import cookieParser from "cookie-parser"
 import authRouter from "./routes/auth.routes.js"
 import userRouter from "./routes/user.routes.js"
 import messageRouter from "./routes/messages.routes.js"
+import { app, server } from "./utils/socket.js"
 
 dotenv.config()
+const client = process.env.CLIENT_URL
 
-const app = express()
 app.use(cors({
-  origin: "http://localhost:5173", // your frontend URL
-  credentials: true,               // allow cookies/headers
+  origin: client,
+  credentials: true,
 }));
 
 app.use(express.json({ limit: "10mb" }))
@@ -25,11 +26,11 @@ app.use("/api/message", messageRouter)
 
 
 
-app.get("/", (req, res) =>{
-    res.send("Hello")
+app.get("/", (req, res) => {
+  res.send("Hello")
 })
 
-app.listen(3000, async() =>{
-    await connectDB()
-    console.log("Server Running on Port : 3000")
+server.listen(3000, async () => {
+  await connectDB()
+  console.log("Server Running on Port : 3000")
 })

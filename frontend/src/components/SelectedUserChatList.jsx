@@ -1,79 +1,78 @@
 import React, { useEffect, useRef } from "react";
 import useChatStore from "../store/useChatStore";
 import { useAuthStore } from "../store/authStore";
-import EmptyChatContainer from "./NOCHATSPLACEHOLDER";
-import RotatingLoader from "./Loader";
 
 const SelectedUserChatList = () => {
-  const { messages, selectedUser, isMessagesLoading } = useChatStore();
+  const { messages, selectedUser } = useChatStore();
   const { authUser } = useAuthStore();
-  const scrollRef = useRef(null);
 
-  const chatMessages = messages.filter(
-    (msg) =>
-      (msg.senderId === authUser?.user?._id &&
-        msg.receiverId === selectedUser?._id) ||
-      (msg.senderId === selectedUser?._id &&
-        msg.receiverId === authUser?.user?._id)
-  );
+  const endRef = useRef(null);
 
+  // Auto scroll to bottom when messages change
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (endRef.current) {
+      endRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [chatMessages]);
+  }, [messages, selectedUser]);
 
-  if (messages.length === 0) {
-    return <EmptyChatContainer selectedUser={selectedUser} />;
-  }
-
-  if (isMessagesLoading) {
+  if (!selectedUser) {
     return (
-      <div className="flex flex-1 items-center justify-center bg-slate-900">
-        <RotatingLoader />
+      <div className="flex flex-1 items-center justify-center text-gray-500">
+        Select a user to start chatting
       </div>
     );
   }
 
+  // ✅ Filter only messages between logged-in user and selected user
+  const chatMessages = messages.filter(
+    (msg) =>
+      (msg.senderId === authUser?.user?._id &&
+        msg.receiverId === selectedUser._id) ||
+      (msg.senderId === selectedUser._id &&
+        msg.receiverId === authUser?.user?._id)
+  );
+
   return (
-    <div
-      ref={scrollRef}
-      className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-900"
-    >
+    <div className="flex-1 h-full overflow-y-auto p-4 space-y-4 bg-slate-900">
       {chatMessages.map((msg) => {
-        const isSender = msg.senderId === authUser?.user?._id;
+        const isMine = msg.senderId === authUser?.user?._id;
+
         return (
           <div
             key={msg._id}
-            className={`flex ${isSender ? "justify-end" : "justify-start"}`}
+            className={`flex ${isMine ? "justify-end" : "justify-start"}`}
           >
-            <div
-              className={`px-3 py-2 rounded-lg inline-block max-w-xs md:max-w-sm break-words space-y-2 ${
-                isSender
-                  ? "bg-blue-800 text-slate-100"
-                  : "bg-slate-700 text-slate-100"
-              }`}
-            >
-              {msg.text && <p>{msg.text}</p>}
-
-              {msg.image && (
-                <img
-                  src={msg.image}
-                  alt="chat"
-                  className="rounded-lg max-h-64 object-cover"
-                />
-              )}
-
-              <div className="text-xs text-slate-400 mt-1 text-right">
-                {new Date(msg.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+            {msg.text && (
+              <div
+                className={`max-w-xs p-3 rounded-lg ${
+                  isMine
+                    ? "bg-blue-600 text-white rounded-br-none"
+                    : "bg-gray-700 text-white rounded-bl-none"
+                }`}
+              >
+                <p className="whitespace-pre-line">{msg.text}</p>
               </div>
-            </div>
+            )}
+
+            {msg.image && (
+              <div className="mt-1">
+                <img
+                  src={
+                    msg.isOptimistic && msg.image instanceof File
+                      ? URL.createObjectURL(msg.image)
+                      : msg.image
+                  }
+                  alt="Message"
+                  className="max-w-[220px] max-h-[220px] object-cover rounded-lg"
+                  style={{ border: "none", outline: "none" }}
+                  onError={(e) => (e.target.style.display = "none")}
+                />
+              </div>
+            )}
           </div>
         );
       })}
+      <div ref={endRef} />
     </div>
   );
 };

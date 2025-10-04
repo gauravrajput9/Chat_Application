@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 export default function Navbar() {
   const authUser = useAuthStore((state) => state.authUser);
   const setAuthUser = useAuthStore((state) => state.setAuthUser);
+  const disconnectSocket = useAuthStore((state) => state.disconnectSocket);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -26,7 +27,8 @@ export default function Navbar() {
       .then(() => {
         navigate("/login");
         toast.success("Logged out successfully");
-        setAuthUser(null)
+        setAuthUser(null);
+        disconnectSocket();
       })
       .catch((err) => {
         console.error("Logout failed:", err);

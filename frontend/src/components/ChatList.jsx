@@ -2,13 +2,13 @@ import React, { useEffect } from "react";
 import useChatStore from "../store/useChatStore";
 import { LoaderSkeletonContacts } from "./ContactsList";
 import NoChatsFound from "./NoChatsFound";
+import { useAuthStore } from "../store/authStore";
 
 const ChatList = () => {
-  const chats = useChatStore((state) => state.chats);
-  const setAllChats = useChatStore((state) => state.setAllChats);
-  const isUsersLoading = useChatStore((state) => state.isUsersLoading);
+  const { chats, setAllChats, isUsersLoading, setSelectedUser } =
+    useChatStore();
 
-  const setSelectedUser = useChatStore((state) => state.setSelectedUser)
+  const onlineUsers = useAuthStore((state) => state.onlineUsers);
 
   useEffect(() => {
     if (!chats || !chats.chatParteners || chats.chatParteners.length === 0) {
@@ -19,32 +19,41 @@ const ChatList = () => {
   if (isUsersLoading) {
     return <LoaderSkeletonContacts />;
   }
-  if(chats?.chatParteners?.length === 0){
-    return <NoChatsFound/>
+  if (chats?.chatParteners?.length === 0) {
+    return <NoChatsFound />;
   }
 
   return (
     <div className="flex flex-col gap-2 overflow-y-auto max-h-[calc(100vh-200px)]">
       {chats?.chatParteners && chats.chatParteners.length > 0 ? (
-        chats.chatParteners.map((chat) => (
-          <div
-            key={chat._id}
-            onClick={() => setSelectedUser(chat)}
-            className="flex items-center gap-3 p-3 rounded-xl bg-slate-700 hover:bg-slate-600 cursor-pointer transition-colors"
-          >
-            {/* Avatar */}
-            <img
-              src={chat.profilePic || "/user-avatar.png"}
-              alt={chat.fullName}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+        chats.chatParteners.map((chat) => {
+          const isOnline = onlineUsers.includes(chat._id);
 
-            {/* Chat Name */}
-            <span className="font-medium text-slate-200">
-              {chat.fullName || "Unnamed Chat"}
-            </span>
-          </div>
-        ))
+          return (
+            <div
+              key={chat._id}
+              onClick={() => setSelectedUser(chat)}
+              className="flex items-center gap-3 p-3 rounded-xl bg-slate-700 hover:bg-slate-600 cursor-pointer transition-colors"
+            >
+              {/* Avatar with Online Indicator */}
+              <div className="relative">
+                <img
+                  src={chat.profilePic || "/user-avatar.png"}
+                  alt={chat.fullName}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                {isOnline && (
+                  <span className="absolute bottom-0 right-0 block w-3 h-3 bg-green-500 rounded-full border-2 border-slate-700"></span>
+                )}
+              </div>
+
+              {/* Chat Name */}
+              <span className="font-medium text-slate-200">
+                {chat.fullName || "Unnamed Chat"}
+              </span>
+            </div>
+          );
+        })
       ) : (
         <p className="text-slate-400 text-center py-2">No chats found</p>
       )}
