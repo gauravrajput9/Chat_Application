@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
   res.send("Hello")
 })
 
-server.listen(3000, async () => {
+server.listen(process.env.PORT, async () => {
   await connectDB()
   console.log("Server Running on Port : 3000")
 })
