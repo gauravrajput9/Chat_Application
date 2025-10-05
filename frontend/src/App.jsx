@@ -14,6 +14,7 @@ import UpdateProfile from "./pages/UpdateProfile.jsx";
 import ErrorPage from "./pages/ErrorPage.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "./styles/advanced.css";
 
 const router = createBrowserRouter([
   {
@@ -94,7 +95,10 @@ const App = () => {
   }
 
   return (
-    <>
+    <div className="dark min-h-screen bg-slate-900" style={{
+      background: 'linear-gradient(45deg, #0f172a 0%, #1e293b 100%)',
+      minHeight: '100vh'
+    }}>
       <ToastContainer
         position="top-right"
         autoClose={1000}
@@ -107,7 +111,7 @@ const App = () => {
       />
 
       <RouterProvider router={router} />
-    </>
+    </div>
   );
 };
 

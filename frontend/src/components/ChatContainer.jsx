@@ -5,26 +5,43 @@ import SelectedUserChatList from "./SelectedUserChatList";
 import ChatInput from "./ChatInput"; // separate input component
 
 const ChatContainer = () => {
-  const { selectedUser, getMessagesByUserId } = useChatStore();
+  const {
+    selectedUser,
+    getMessagesByUserId,
+    subscribeToNewMessage,
+    unSubscribeFromMessage,
+  } = useChatStore();
 
   useEffect(() => {
-    if (selectedUser) {
-      getMessagesByUserId(selectedUser._id);
-    }
-  }, [selectedUser, getMessagesByUserId]);
+    getMessagesByUserId(selectedUser._id);
+    subscribeToNewMessage();
+
+    return () => {
+      unSubscribeFromMessage();
+    };
+  }, [
+    selectedUser,
+    getMessagesByUserId,
+    subscribeToNewMessage,
+    unSubscribeFromMessage,
+  ]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-900">
+    <div className="flex flex-col h-full bg-transparent">
       {/* Header */}
-      <ChatContainerHeader />
+      <div className="border-b border-gray-700/30 px-6 py-4">
+        <ChatContainerHeader />
+      </div>
 
       {/* Chat messages */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-hidden">
         <SelectedUserChatList />
       </div>
 
       {/* Input area */}
-      <ChatInput />
+      <div className="border-t border-gray-700/30 p-6">
+        <ChatInput />
+      </div>
     </div>
   );
 };

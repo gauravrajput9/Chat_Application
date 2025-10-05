@@ -14,7 +14,7 @@ export const socketAuthMiddleware = async (socket, next) => {
             .find((row) => row.startsWith("token="))
             ?.split("=")[1];
 
-
+        console.log(token)
         if (!token) {
             return next(new Error("No token found"));
         }

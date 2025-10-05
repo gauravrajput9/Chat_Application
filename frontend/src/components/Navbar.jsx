@@ -36,30 +36,30 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-[#0f172a]/90 backdrop-blur-md sticky top-0 z-50 shadow-md">
+    <nav className="glass-effect sticky top-0 z-50 border-b border-gray-700/30">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Brand */}
         <Link
           to="/"
-          className="text-2xl font-extrabold text-teal-400 hover:text-teal-300 transition"
+          className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent hover:from-blue-300 hover:to-purple-300 smooth-transition"
         >
-          ChatConnect
+          ChatFlow
         </Link>
 
         {/* Navigation Links */}
-        <div className="hidden md:flex items-center space-x-6">
+        <div className="hidden md:flex items-center space-x-4">
           {!authUser ? (
             <>
               <Link
                 to="/signup"
-                className="px-5 py-2 bg-teal-500 text-white font-semibold rounded-lg shadow-md hover:bg-teal-600 hover:shadow-lg transition duration-300 transform hover:-translate-y-0.5"
+                className="px-6 py-3 gradient-accent hover:gradient-accent-hover text-white font-semibold rounded-xl shadow-lg hover:shadow-xl smooth-transition hover-lift hover-glow"
               >
                 Sign Up
               </Link>
 
               <Link
                 to="/login"
-                className="px-5 py-2 border border-teal-400 text-white font-semibold rounded-lg shadow-sm hover:text-teal-400 hover:bg-teal-400/20 hover:shadow-md transition duration-300 transform hover:-translate-y-0.5"
+                className="px-6 py-3 glass-effect border border-blue-400/30 text-white font-semibold rounded-xl hover:bg-blue-400/20 hover:border-blue-400/50 smooth-transition hover-lift"
               >
                 Login
               </Link>
@@ -67,15 +67,15 @@ export default function Navbar() {
           ) : (
             <div className="relative" ref={dropdownRef}>
               <div
-                className="flex items-center cursor-pointer gap-2 px-3 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition duration-300 transform hover:scale-105"
+                className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-xl glass-effect hover:bg-slate-700/50 smooth-transition hover-lift"
                 onClick={() => setIsOpen(!isOpen)}
               >
                 <img
                   src={authUser?.user.profilePic || "https://i.pravatar.cc/40"}
                   alt="User"
-                  className="w-8 h-8 rounded-full border-2 border-teal-400"
+                  className="w-8 h-8 rounded-full border-2 border-blue-400/50"
                 />
-                <span className="text-white font-medium">{authUser.name}</span>
+                <span className="text-white font-medium">{authUser.user?.fullName || authUser.name}</span>
                 <svg
                   className={`w-4 h-4 ml-1 transition-transform duration-300 ${
                     isOpen ? "rotate-180" : "rotate-0"
@@ -95,7 +95,7 @@ export default function Navbar() {
 
               {/* Animated Dropdown */}
               <div
-                className={`absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl overflow-hidden z-50 transition-all duration-300 transform origin-top-right ${
+                className={`absolute right-0 mt-3 w-48 glass-effect rounded-xl overflow-hidden z-50 smooth-transition transform origin-top-right border border-gray-600/30 ${
                   isOpen
                     ? "opacity-100 scale-100"
                     : "opacity-0 scale-95 pointer-events-none"
@@ -103,20 +103,21 @@ export default function Navbar() {
               >
                 <Link
                   to="/profile"
-                  className="block px-4 py-3 text-gray-800 hover:bg-teal-50 hover:text-teal-600 transition duration-200"
+                  className="block px-4 py-3 text-white hover:bg-blue-500/20 hover:text-blue-300 smooth-transition"
                   onClick={() => setIsOpen(false)}
                 >
                   Profile
                 </Link>
                 <Link
-                  to="/settings"
-                  className="block px-4 py-3 text-gray-800 hover:bg-teal-50 hover:text-teal-600 transition duration-200"
+                  to="/update-profile"
+                  className="block px-4 py-3 text-white hover:bg-blue-500/20 hover:text-blue-300 smooth-transition"
                   onClick={() => setIsOpen(false)}
                 >
                   Settings
                 </Link>
+                <div className="border-t border-gray-600/30 my-1"></div>
                 <button
-                  className="w-full text-left px-4 py-3 text-gray-800 hover:bg-teal-50 hover:text-teal-600 transition duration-200"
+                  className="w-full text-left px-4 py-3 text-white hover:bg-red-500/20 hover:text-red-300 smooth-transition"
                   onClick={() => {
                     handleLogout();
                     setIsOpen(false);
@@ -129,8 +130,88 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Menu Placeholder */}
-        <div className="md:hidden">{/* Hamburger menu */}</div>
+        {/* Mobile Menu Button */}
+        <div className="md:hidden">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 rounded-lg glass-effect hover:bg-slate-700/50 smooth-transition"
+            aria-label="Toggle menu"
+          >
+            <svg
+              className={`w-6 h-6 text-white smooth-transition ${isOpen ? 'rotate-90' : 'rotate-0'}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      {/* Mobile Menu */}
+      <div className={`md:hidden overflow-hidden smooth-transition ${
+        isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+      }`}>
+        <div className="px-6 py-4 glass-effect border-t border-gray-700/30">
+          {!authUser ? (
+            <div className="space-y-3">
+              <Link
+                to="/signup"
+                className="block w-full text-center px-6 py-3 gradient-accent hover:gradient-accent-hover text-white font-semibold rounded-xl smooth-transition hover-lift"
+                onClick={() => setIsOpen(false)}
+              >
+                Sign Up
+              </Link>
+              <Link
+                to="/login"
+                className="block w-full text-center px-6 py-3 glass-effect border border-blue-400/30 text-white font-semibold rounded-xl hover:bg-blue-400/20 smooth-transition hover-lift"
+                onClick={() => setIsOpen(false)}
+              >
+                Login
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 glass-effect rounded-xl">
+                <img
+                  src={authUser?.user.profilePic || "https://i.pravatar.cc/40"}
+                  alt="User"
+                  className="w-10 h-10 rounded-full border-2 border-blue-400/50"
+                />
+                <span className="text-white font-medium">{authUser.user?.fullName || authUser.name}</span>
+              </div>
+              <Link
+                to="/profile"
+                className="block w-full text-left px-4 py-3 text-white hover:bg-blue-500/20 rounded-xl smooth-transition"
+                onClick={() => setIsOpen(false)}
+              >
+                Profile
+              </Link>
+              <Link
+                to="/update-profile"
+                className="block w-full text-left px-4 py-3 text-white hover:bg-blue-500/20 rounded-xl smooth-transition"
+                onClick={() => setIsOpen(false)}
+              >
+                Settings
+              </Link>
+              <button
+                className="block w-full text-left px-4 py-3 text-white hover:bg-red-500/20 rounded-xl smooth-transition"
+                onClick={() => {
+                  handleLogout();
+                  setIsOpen(false);
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
