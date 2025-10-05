@@ -30,9 +30,9 @@ export const useAuthStore = create((set, get) => ({
 
         console.log("Connect Socket Called")
 
-        const socket = io(BASE_URL, {
-            withCredentials: true,       // send cookies
-            transports: ["websocket"]    // polling optional
+        const socket = io("https://chat-application-rsxd.onrender.com", {
+            transports: ["websocket"],
+            withCredentials: true
         });
 
         set({ socket })
