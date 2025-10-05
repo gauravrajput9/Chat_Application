@@ -35,6 +35,6 @@ app.get("/", (req, res) => {
 })
 
 server.listen(process.env.PORT, async () => {
-  await connectDB()
-  console.log("Server Running on Port : 3000")
-})
+  await connectDB();
+  console.log(`Server running on port ${PORT}`);
+});
