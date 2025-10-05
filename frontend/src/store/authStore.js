@@ -31,8 +31,8 @@ export const useAuthStore = create((set, get) => ({
         console.log("Connect Socket Called")
 
         const socket = io(BASE_URL, {
-            withCredentials: true,
-            transports: ["websocket", "polling"]
+            withCredentials: true,       // send cookies
+            transports: ["websocket"]    // polling optional
         });
 
         set({ socket })
@@ -44,7 +44,7 @@ export const useAuthStore = create((set, get) => ({
         socket.on("connect_error", (err) => {
             console.error("❌ Connection error:", err.message);
         });
-        
+
         socket.on("getAllOnlineUsers", (users) => {
             console.log("Online Users from socket: ", users)
             set({ onlineUsers: users })

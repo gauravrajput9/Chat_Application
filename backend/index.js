@@ -12,8 +12,10 @@ dotenv.config()
 const client = process.env.CLIENT_URL
 
 app.use(cors({
-  origin: client,
-  credentials: true,
+  origin: [              
+    process.env.CLIENT_URL   
+  ],
+  credentials: true
 }));
 
 app.use(express.json({ limit: "10mb" }))
