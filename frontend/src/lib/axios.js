@@ -1,8 +1,12 @@
 import axios from "axios"
 
 export const axiosInstance = axios.create({
-    baseURL: "https://chat-application-rsxd.onrender.com/api",
-    withCredentials: true
+    baseURL: import.meta.env.VITE_API_URL || "https://chat-application-rsxd.onrender.com/api",
+    withCredentials: true,
+    timeout: 30000, // 30 seconds timeout
+    headers: {
+        'Content-Type': 'application/json',
+    }
 })
 
 // user routes
