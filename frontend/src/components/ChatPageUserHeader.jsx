@@ -17,10 +17,9 @@ const ChatPageUserHeader = () => {
   const [previousImage, setPreviousImage] = React.useState(null);
   const fileInputRef = useRef(null);
 
-  const { isSoundEnabled, toggleSound } = useChatStore();
+  const { isSoundEnabled, toggleSound, clearChatState } = useChatStore();
 
-  const { authUser, disconnectSocket, setAuthUser, onlineUsers } =
-    useAuthStore();
+  const { authUser, logout, onlineUsers, setAuthUser } = useAuthStore();
 
   const [username, setUserName] = React.useState(
     authUser?.user?.fullName || "User"
@@ -31,12 +30,19 @@ const ChatPageUserHeader = () => {
   const handleLogout = () => {
     logoutUser()
       .then(() => {
+        // Clear all application state
+        clearChatState();
+        logout();
+        
+        // Navigate and show success message
         navigate("/login");
         toast.success("Logged out successfully");
-        setAuthUser(null);
-        disconnectSocket();
+        console.log("👋 User logged out from chat page");
       })
-      .catch((err) => console.error("Logout failed:", err));
+      .catch((err) => {
+        console.error("Logout failed:", err);
+        toast.error("Logout failed. Please try again.");
+      });
   };
 
   // handle the update user mutation, for updating profile picture

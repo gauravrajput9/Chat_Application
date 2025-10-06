@@ -101,39 +101,86 @@ const useChatStore = create((set, get) => ({
   },
 
 subscribeToNewMessage: () => {
-  const { selectedUser, isSoundEnabled } = get();
-  if (!selectedUser) return;
+  const { socket } = useAuthStore.getState();
+  if (!socket?.connected) {
+    console.warn("❌ Socket not connected, cannot subscribe to messages");
+    return;
+  }
 
-  const {socket } = useAuthStore.getState();
-
+  // Remove existing listener to prevent duplicates
+  socket.off("newMessage");
+  
   socket.on("newMessage", (newMessage) => {
-    const isForCurrentChat =
-      newMessage.senderId === selectedUser._id ||
-      newMessage.receiverId === selectedUser._id;
+    console.log("📨 New message received:", newMessage);
+    const { selectedUser, isSoundEnabled } = get();
+    const { authUser } = useAuthStore.getState();
+    
+    if (!authUser?.user?._id) return;
 
-    if (isForCurrentChat) {
-      // ✅ Functional update ensures correct order
-      set((state) => ({
-        messages: [...state.messages, newMessage],
-      }));
-    }
+    // Check if message is for any conversation involving current user
+    const isForCurrentUser = 
+      newMessage.senderId === authUser.user._id || 
+      newMessage.receiverId === authUser.user._id;
 
-    if (isSoundEnabled) {
-      const notificationSound = new Audio("/sounds/notification.mp3");
-      notificationSound.currentTime = 0;
-      notificationSound
-        .play()
-        .catch((error) => console.log("Error playing Sound", error.message));
+    if (isForCurrentUser) {
+      // Update messages using functional update
+      set((state) => {
+        // Avoid duplicates
+        const existingMessage = state.messages.find(msg => msg._id === newMessage._id);
+        if (existingMessage) return state;
+        
+        return {
+          ...state,
+          messages: [...state.messages, newMessage]
+        };
+      });
+
+      // Play notification sound for incoming messages (not sent by current user)
+      if (isSoundEnabled && newMessage.senderId !== authUser.user._id) {
+        const notificationSound = new Audio("/sounds/notification.mp3");
+        notificationSound.currentTime = 0;
+        notificationSound
+          .play()
+          .catch((error) => console.log("Error playing Sound", error.message));
+      }
     }
   });
+  
+  console.log("✅ Subscribed to new messages");
 },
 
 
 
 
   unSubscribeFromMessage: () => {
-    const socket = useAuthStore.getState().socket;
-    socket.off("newMessage");
+    const { socket } = useAuthStore.getState();
+    if (socket) {
+      socket.off("newMessage");
+      console.log("🔇 Unsubscribed from messages");
+    }
+  },
+
+  // Add function to clear chat state on logout
+  clearChatState: () => {
+    set({
+      allContacts: [],
+      chats: [],
+      messages: [],
+      selectedUser: null,
+      activeTab: "chats",
+      isUsersLoading: false,
+      isMessagesLoading: false
+    });
+    console.log("🧹 Chat state cleared");
+  },
+
+  // Add function to refresh messages when switching users
+  refreshMessages: () => {
+    const { selectedUser } = get();
+    if (selectedUser) {
+      console.log("🔄 Refreshing messages for user:", selectedUser.fullName);
+      get().getMessagesByUserId(selectedUser._id);
+    }
   },
 }));
 

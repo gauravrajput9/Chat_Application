@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import useChatStore from "../store/useChatStore";
+import { useAuthStore } from "../store/authStore";
 import ChatContainerHeader from "./ChatContainerHeader";
 import SelectedUserChatList from "./SelectedUserChatList";
 import ChatInput from "./ChatInput"; // separate input component
@@ -10,21 +11,31 @@ const ChatContainer = () => {
     getMessagesByUserId,
     subscribeToNewMessage,
     unSubscribeFromMessage,
+    messages,
   } = useChatStore();
+  
+  const { socket, authUser } = useAuthStore();
 
+  // Load messages when selected user changes
   useEffect(() => {
-    getMessagesByUserId(selectedUser._id);
-    subscribeToNewMessage();
+    if (selectedUser?._id && authUser) {
+      console.log("📋 Loading messages for:", selectedUser.fullName);
+      getMessagesByUserId(selectedUser._id);
+    }
+  }, [selectedUser?._id, authUser?.user?._id, getMessagesByUserId]);
 
-    return () => {
-      unSubscribeFromMessage();
-    };
-  }, [
-    selectedUser,
-    getMessagesByUserId,
-    subscribeToNewMessage,
-    unSubscribeFromMessage,
-  ]);
+  // Subscribe to socket messages when socket is connected
+  useEffect(() => {
+    if (socket?.connected && authUser) {
+      console.log("🔌 Setting up message subscription");
+      subscribeToNewMessage();
+
+      return () => {
+        console.log("🔇 Cleaning up message subscription");
+        unSubscribeFromMessage();
+      };
+    }
+  }, [socket?.connected, authUser?.user?._id, subscribeToNewMessage, unSubscribeFromMessage]);
 
   return (
     <div className="flex flex-col h-full bg-transparent">

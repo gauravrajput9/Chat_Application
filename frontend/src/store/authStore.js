@@ -52,10 +52,22 @@ export const useAuthStore = create((set, get) => ({
     },
 
     disconnectSocket: () => {
-        if (get().socket.connected) {
-            get().socket.disconnect()
-            console.log("Socket Disconnected")
+        const { socket } = get();
+        if (socket?.connected) {
+            socket.disconnect();
+            console.log("Socket Disconnected");
         }
+        set({ socket: null, onlineUsers: [] });
+    },
 
+    // Add logout function to properly clear state
+    logout: () => {
+        get().disconnectSocket();
+        set({ 
+            authUser: null, 
+            socket: null, 
+            onlineUsers: [],
+            isCheckingAuth: false 
+        });
     }
 }))

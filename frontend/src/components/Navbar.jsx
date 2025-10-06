@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import useChatStore from "../store/useChatStore";
 import { logoutUser } from "../lib/axios";
 import { toast } from "react-toastify";
 
 export default function Navbar() {
   const authUser = useAuthStore((state) => state.authUser);
-  const setAuthUser = useAuthStore((state) => state.setAuthUser);
-  const disconnectSocket = useAuthStore((state) => state.disconnectSocket);
+  const logout = useAuthStore((state) => state.logout);
+  const clearChatState = useChatStore((state) => state.clearChatState);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -25,13 +26,18 @@ export default function Navbar() {
   const handleLogout = () => {
     logoutUser()
       .then(() => {
+        // Clear all application state
+        clearChatState();
+        logout();
+        
+        // Navigate and show success message
         navigate("/login");
         toast.success("Logged out successfully");
-        setAuthUser(null);
-        disconnectSocket();
+        console.log("👋 User logged out successfully");
       })
       .catch((err) => {
         console.error("Logout failed:", err);
+        toast.error("Logout failed. Please try again.");
       });
   };
 
