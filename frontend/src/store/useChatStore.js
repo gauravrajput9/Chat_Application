@@ -94,34 +94,45 @@ const useChatStore = create((set, get) => ({
     const text = data.get("text");
     const image = data.get("image");
 
+    console.log('📤 Sending message:', { text, receiverId, senderId: authUser?._id });
+
     const tempId = `temp-${Date.now()}`;
     const optimisticMessage = {
       _id: tempId,
       senderId: authUser?._id,
       receiverId,
       text,
-      image,
+      image: image ? URL.createObjectURL(image) : null,
       createdAt: new Date().toISOString(),
       isOptimistic: true,
     };
 
+    // Add optimistic message immediately
     set({ messages: [...messages, optimisticMessage] });
+    console.log('✅ Added optimistic message to UI');
 
     try {
       const res = await axiosInstance.post(`/message/send/${receiverId}`, data);
       const newMessage = res.data.newMessage;
+      console.log('📥 Received response from server:', newMessage);
 
+      // Replace optimistic message with real message from server
       set({
-        messages: get().messages.map((msg) =>
-          msg._id === tempId ? newMessage : msg
-        ),
+        messages: get().messages.map((msg) => {
+          if (msg._id === tempId) {
+            console.log('🔄 Replacing optimistic message with server response');
+            return newMessage;
+          }
+          return msg;
+        }),
       });
     } catch (error) {
+      // Remove optimistic message on error
       set({
         messages: get().messages.filter((msg) => msg._id !== tempId),
       });
       console.error("Message Sending Error", error.message);
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || "Failed to send message");
     }
   },
 
@@ -150,10 +161,34 @@ subscribeToNewMessage: () => {
     if (isForCurrentUser) {
       // Update messages using functional update
       set((state) => {
-        // Avoid duplicates
-        const existingMessage = state.messages.find(msg => msg._id === newMessage._id);
-        if (existingMessage) return state;
+        // Check if this is replacing an optimistic message (for sender)
+        const optimisticIndex = state.messages.findIndex(msg => 
+          msg.isOptimistic && 
+          msg.senderId === newMessage.senderId && 
+          msg.receiverId === newMessage.receiverId &&
+          msg.text === newMessage.text
+        );
         
+        // If we found an optimistic message, replace it
+        if (optimisticIndex !== -1) {
+          const updatedMessages = [...state.messages];
+          updatedMessages[optimisticIndex] = newMessage;
+          console.log('✅ Replaced optimistic message with real message');
+          return {
+            ...state,
+            messages: updatedMessages
+          };
+        }
+        
+        // Check if message already exists (avoid duplicates)
+        const existingMessage = state.messages.find(msg => msg._id === newMessage._id);
+        if (existingMessage) {
+          console.log('⚠️ Message already exists, skipping:', newMessage._id);
+          return state;
+        }
+        
+        // Add new message
+        console.log('➕ Adding new message to chat');
         return {
           ...state,
           messages: [...state.messages, newMessage]

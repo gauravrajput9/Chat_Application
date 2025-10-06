@@ -11,7 +11,7 @@ import { app, server } from "./utils/socket.js"
 dotenv.config()
 
 const allowedOrigins = [
-  process.env.CLIENT_URL,
+  process.env.CLIENT_URL?.replace(/\/$/, ''), // Remove trailing slash if present
   "https://chat-application-1-imbt.onrender.com",
   "https://chat-application-rsxd.onrender.com", // ✅ your backend domain
   "http://localhost:5173",

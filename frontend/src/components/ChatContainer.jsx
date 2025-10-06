@@ -22,7 +22,7 @@ const ChatContainer = () => {
       console.log("📋 Loading messages for:", selectedUser.fullName);
       getMessagesByUserId(selectedUser._id);
     }
-  }, [selectedUser?._id, authUser?.user?._id, getMessagesByUserId]);
+  }, [selectedUser?._id, authUser?._id, getMessagesByUserId]);
 
   // Subscribe to socket messages when socket is connected
   useEffect(() => {
@@ -35,7 +35,7 @@ const ChatContainer = () => {
         unSubscribeFromMessage();
       };
     }
-  }, [socket?.connected, authUser?.user?._id, subscribeToNewMessage, unSubscribeFromMessage]);
+  }, [socket?.connected, authUser?._id, subscribeToNewMessage, unSubscribeFromMessage]);
 
   return (
     <div className="flex flex-col h-full bg-transparent">

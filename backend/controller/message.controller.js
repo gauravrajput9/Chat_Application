@@ -73,11 +73,23 @@ export const sendMessage = async (req, res) => {
             text,
         });
 
-        const receiverSocketId = getReceiverSocketId(receiverId)
-        console.log(receiverSocketId)
+        // Get socket IDs for both sender and receiver
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        const senderSocketId = getReceiverSocketId(senderId);
+        
+        console.log('Receiver socket ID:', receiverSocketId);
+        console.log('Sender socket ID:', senderSocketId);
 
+        // Emit to receiver if online
         if(receiverSocketId){
-            io.to(receiverSocketId).emit("newMessage", newMessage)
+            io.to(receiverSocketId).emit("newMessage", newMessage);
+            console.log('✅ Message sent to receiver');
+        }
+        
+        // Also emit to sender to confirm message was sent
+        if(senderSocketId){
+            io.to(senderSocketId).emit("newMessage", newMessage);
+            console.log('✅ Message confirmation sent to sender');
         }
 
         res.status(201).json({
