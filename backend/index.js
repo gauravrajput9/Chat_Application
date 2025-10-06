@@ -10,13 +10,14 @@ import { app, server } from "./utils/socket.js"
 
 dotenv.config()
 
-// CORS configuration
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "https://chat-application-1-imbt.onrender.com",
-  "http://localhost:3000",
-  "http://localhost:5173"
-].filter(Boolean); // Remove undefined values
+  "https://chat-application-rsxd.onrender.com", // ✅ your backend domain
+  "http://localhost:5173",
+  "http://localhost:3000"
+].filter(Boolean);
+
 
 console.log('🌐 Allowed CORS origins:', allowedOrigins);
 
@@ -24,7 +25,7 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, postman, etc.)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.includes(origin)) {
       console.log(`✅ CORS allowed for origin: ${origin}`);
       return callback(null, true);
@@ -87,7 +88,7 @@ app.get("/", (req, res) => {
     status: "running",
     endpoints: {
       auth: "/api/auth",
-      users: "/api/user", 
+      users: "/api/user",
       messages: "/api/message",
       health: "/health"
     }

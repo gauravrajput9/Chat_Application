@@ -8,15 +8,16 @@ const app = express()
 const server = http.createServer(app)
 
 const io = new Server(server, {
-    cors: {
-        origin: [
-            process.env.CLIENT_URL,
-            "https://chat-application-1-imbt.onrender.com", // frontend
-            "http://localhost:5173",
-            "http://localhost:3000"
-        ],
-        credentials: true
-    }
+  cors: {
+    origin: [
+      process.env.CLIENT_URL,
+      "https://chat-application-1-imbt.onrender.com",
+      "https://chat-application-rsxd.onrender.com", // ✅ add backend domain
+      "http://localhost:5173",
+      "http://localhost:3000"
+    ],
+    credentials: true
+  }
 });
 
 

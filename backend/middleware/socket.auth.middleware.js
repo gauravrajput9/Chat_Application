@@ -4,6 +4,8 @@ import { User } from "../models/user.model.js";
 export const socketAuthMiddleware = async (socket, next) => {
     try {
         const cookieHeader = socket.handshake.headers.cookie;
+        console.log("Cookie header:", socket.handshake.headers.cookie);
+
 
         if (!cookieHeader) {
             return next(new Error("No cookies found"));
