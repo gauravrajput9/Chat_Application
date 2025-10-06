@@ -14,6 +14,7 @@ import UpdateProfile from "./pages/UpdateProfile.jsx";
 import ErrorPage from "./pages/ErrorPage.jsx";
 import { ToastContainer } from "react-toastify";
 import NetworkStatusBanner from "./components/NetworkStatusBanner.jsx";
+import BackendWakeupBanner from "./components/BackendWakeupBanner.jsx";
 import "react-toastify/dist/ReactToastify.css";
 import "./styles/advanced.css";
 import "./styles/mobile.css";
@@ -101,6 +102,7 @@ const App = () => {
       background: 'linear-gradient(45deg, #0f172a 0%, #1e293b 100%)',
       minHeight: '100vh'
     }}>
+      <BackendWakeupBanner />
       <NetworkStatusBanner />
       <ToastContainer
         position="top-right"

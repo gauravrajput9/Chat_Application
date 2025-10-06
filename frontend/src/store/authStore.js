@@ -13,14 +13,41 @@ export const useAuthStore = create((set, get) => ({
   setAuthUser: (userData) => set({ authUser: userData }),
 
   checkAuth: async () => {
+    const maxRetries = 3;
+    let retryCount = 0;
+
+    const tryCheckAuth = async () => {
+      try {
+        console.log(`🔍 Checking auth... (attempt ${retryCount + 1}/${maxRetries})`);
+        const res = await axiosInstance.get("/user/check");
+        set({ authUser: res.data.user });
+        console.log('✅ Auth check successful, connecting socket...');
+        get().connectSocketWithRetry();
+      } catch (error) {
+        retryCount++;
+        console.log(`❌ Auth check failed (attempt ${retryCount}/${maxRetries}):`, error.message);
+        
+        // Check if it's a 502/503 error (backend sleeping) or network error
+        const isBackendSleeping = 
+          error.response?.status === 502 || 
+          error.response?.status === 503 || 
+          error.code === 'ERR_NETWORK';
+
+        if (isBackendSleeping && retryCount < maxRetries) {
+          const delay = Math.min(5000 * retryCount, 15000); // 5s, 10s, 15s delays
+          console.log(`😴 Backend seems to be sleeping. Retrying in ${delay/1000}s...`);
+          setTimeout(tryCheckAuth, delay);
+          return;
+        }
+        
+        console.log("Error checking Auth: ", error);
+      }
+    };
+
     try {
-      const res = await axiosInstance.get("/user/check")
-      set({ authUser: res.data.user })
-      get().connectSocketWithRetry() // ✅ use retry logic
-    } catch (error) {
-      console.log("Error checking Auth: ", error)
+      await tryCheckAuth();
     } finally {
-      set({ isCheckingAuth: false })
+      set({ isCheckingAuth: false });
     }
   },
 
