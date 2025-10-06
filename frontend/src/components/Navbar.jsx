@@ -79,7 +79,7 @@ export default function Navbar() {
                 onClick={() => setIsOpen(!isOpen)}
               >
                 <img
-                  src={authUser?.user?.profilePic || "https://i.pravatar.cc/40"}
+                  src={authUser?.profilePic || "https://i.pravatar.cc/40"}
                   alt="User"
                   className="w-8 h-8 rounded-full border-2 border-blue-400/50"
                 />
@@ -188,7 +188,7 @@ export default function Navbar() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 glass-effect rounded-xl">
                 <img
-                  src={authUser?.user.profilePic || "https://i.pravatar.cc/40"}
+                  src={authUser?.profilePic || "https://i.pravatar.cc/40"}
                   alt="User"
                   className="w-10 h-10 rounded-full border-2 border-blue-400/50"
                 />
