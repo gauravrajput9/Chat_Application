@@ -7,9 +7,7 @@ export const axiosInstance = axios.create({
     withCredentials: true,
     timeout: 30000, // 30 second timeout for slower mobile networks
     headers: { 
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache"
+        "Content-Type": "application/json"
     },
 });
 
