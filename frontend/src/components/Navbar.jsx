@@ -13,6 +13,8 @@ export default function Navbar() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
+  console.log(authUser)
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
