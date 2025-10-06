@@ -77,7 +77,7 @@ export default function Navbar() {
                 onClick={() => setIsOpen(!isOpen)}
               >
                 <img
-                  src={authUser?.user.profilePic || "https://i.pravatar.cc/40"}
+                  src={authUser?.user?.profilePic || "https://i.pravatar.cc/40"}
                   alt="User"
                   className="w-8 h-8 rounded-full border-2 border-blue-400/50"
                 />
