@@ -36,9 +36,16 @@ export const useAuthStore = create((set, get) => ({
       return
     }
 
+    // Enhanced socket configuration for mobile compatibility
     const socket = io(BASE_URL, {
-      transports: ["websocket"],
-      withCredentials: true // ✅ must be true for cookies
+      transports: ["websocket", "polling"], // Enable polling fallback for mobile
+      withCredentials: true,
+      timeout: 30000, // Longer timeout for mobile networks
+      forceNew: true, // Force new connection
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 10,
+      maxReconnectionAttempts: 10
     })
 
     set({ socket })

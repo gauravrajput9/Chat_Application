@@ -21,16 +21,41 @@ const useChatStore = create((set, get) => ({
   setActiveTab: (tab) => set({ activeTab: tab }),
   setSelectedUser: (selectedUser) => set({ selectedUser }),
 
-  setAllContacts: async () => {
-    if (get().allContacts.length > 0) return;
+  setAllContacts: async (forceRefresh = false) => {
+    if (get().allContacts.length > 0 && !forceRefresh) return;
 
     set({ isUsersLoading: true });
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const fetchContacts = async () => {
+      try {
+        console.log('Fetching contacts... (attempt', retryCount + 1, ')');
+        const res = await axiosInstance.get("/message/getAllContacts");
+        set({ allContacts: res.data.users });
+        console.log('Contacts loaded successfully:', res.data.users?.length || 0, 'contacts');
+      } catch (error) {
+        retryCount++;
+        console.error(`Error fetching contacts (attempt ${retryCount}):`, error);
+        
+        // Retry for network errors on mobile
+        if (error.code === 'NETWORK_ERROR' && retryCount < maxRetries) {
+          console.log(`Retrying in ${retryCount * 1000}ms...`);
+          setTimeout(fetchContacts, retryCount * 1000);
+          return;
+        }
+        
+        // Show appropriate error message
+        const message = error.code === 'NETWORK_ERROR' 
+          ? "Network error. Please check your connection."
+          : error.response?.data?.message || "Failed to fetch contacts";
+        toast.error(message);
+        console.log("Error While Fetching contacts in Store: ", error);
+      }
+    };
+
     try {
-      const res = await axiosInstance.get("/message/getAllContacts");
-      set({ allContacts: res.data.users });
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch contacts");
-      console.log("Error While Fetching contacts in Store: ", error);
+      await fetchContacts();
     } finally {
       set({ isUsersLoading: false });
     }

@@ -13,8 +13,10 @@ import PublicRoute from "./lib/PublicRoutes.jsx";
 import UpdateProfile from "./pages/UpdateProfile.jsx";
 import ErrorPage from "./pages/ErrorPage.jsx";
 import { ToastContainer } from "react-toastify";
+import NetworkStatusBanner from "./components/NetworkStatusBanner.jsx";
 import "react-toastify/dist/ReactToastify.css";
 import "./styles/advanced.css";
+import "./styles/mobile.css";
 
 const router = createBrowserRouter([
   {
@@ -99,6 +101,7 @@ const App = () => {
       background: 'linear-gradient(45deg, #0f172a 0%, #1e293b 100%)',
       minHeight: '100vh'
     }}>
+      <NetworkStatusBanner />
       <ToastContainer
         position="top-right"
         autoClose={1000}

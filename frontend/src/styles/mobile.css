@@ -1,0 +1,135 @@
+/* Mobile-specific CSS improvements */
+
+/* Improve touch interactions */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection for inputs and textareas */
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Better touch targets for mobile */
+button, [role="button"], a {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* Improve scrolling performance on mobile */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile-specific button enhancements */
+button:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* Better mobile viewport handling */
+@media screen and (max-width: 768px) {
+  /* Ensure full height on mobile */
+  html, body, #root {
+    height: 100vh;
+    height: 100dvh; /* Use dynamic viewport height when supported */
+    overflow-x: hidden;
+  }
+  
+  /* Adjust chat container for mobile keyboards */
+  .chat-container {
+    padding-bottom: env(keyboard-inset-height, 0px);
+  }
+  
+  /* Better mobile form styling */
+  input, textarea {
+    font-size: 16px; /* Prevent zoom on iOS */
+    border-radius: 0;
+  }
+  
+  /* Mobile-friendly modal positioning */
+  .modal {
+    margin: 10px;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Fix viewport height issues on iOS */
+  .ios-vh-fix {
+    height: -webkit-fill-available;
+  }
+  
+  /* Better scroll behavior on iOS */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+}
+
+/* Android specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+  /* Android Chrome fixes */
+  input:focus {
+    background-color: transparent;
+  }
+}
+
+/* Better loading states for mobile */
+.loading-spinner-mobile {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Network error indicators */
+.network-error-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #ef4444;
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  text-align: center;
+  z-index: 9999;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+/* Mobile chat optimizations */
+@media screen and (max-width: 768px) {
+  .chat-message {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  
+  .chat-input {
+    font-size: 16px;
+    padding: 12px;
+  }
+  
+  .contact-list-item {
+    padding: 16px 12px;
+    min-height: 64px;
+  }
+}

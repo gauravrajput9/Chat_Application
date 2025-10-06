@@ -17,17 +17,49 @@ export default function Login() {
 
   const { isError, isPending, mutate } = useMutation({
     mutationFn: (userData) => loginUser(userData),
+    retry: (failureCount, error) => {
+      // Retry up to 3 times for network errors (common on mobile)
+      if (error.code === 'NETWORK_ERROR' && failureCount < 3) {
+        console.log(`Network error on mobile, retrying... (${failureCount + 1}/3)`);
+        return true;
+      }
+      return false;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     onSuccess: ({ user, message }) => {
+      console.log('Login successful:', user);
       setAuthUser(user); // now only the user object
       toast.success(message || "Login successful!");
-      connectSocket();
+      // Add small delay before connecting socket to ensure auth is set
+      setTimeout(() => {
+        connectSocket();
+      }, 100);
       navigate("/");
     },
 
     onError: (error) => {
-      console.log("Login error: ", error);
-      const message = error.response?.data?.message || "Login failed!";
-      navigate("/error", { state: { message } });
+      console.error("Login error: ", error);
+      let message = "Login failed!";
+      
+      // Better error messages for mobile users
+      if (error.code === 'NETWORK_ERROR') {
+        message = "Network error. Please check your connection and try again.";
+        toast.error(message);
+      } else if (error.response?.status === 400) {
+        message = error.response.data?.message || "Invalid credentials";
+        toast.error(message);
+      } else if (error.response?.status >= 500) {
+        message = "Server error. Please try again later.";
+        toast.error(message);
+      } else {
+        message = error.response?.data?.message || "Login failed!";
+        toast.error(message);
+      }
+      
+      // Don't navigate to error page for network issues, let user retry
+      if (error.code !== 'NETWORK_ERROR') {
+        navigate("/error", { state: { message } });
+      }
     },
   });
 
@@ -127,7 +159,8 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="group w-full py-4 px-6 gradient-accent hover:gradient-accent-hover rounded-2xl font-semibold smooth-transition hover-lift hover-glow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="group w-full py-4 px-6 gradient-accent hover:gradient-accent-hover active:scale-95 rounded-2xl font-semibold smooth-transition hover-lift hover-glow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   {isPending ? (
                     <>
