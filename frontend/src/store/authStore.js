@@ -57,6 +57,10 @@ export const useAuthStore = create((set, get) => ({
     })
   },
 
+  connectSocket: () => {
+    get().connectSocketWithRetry()
+  },
+
   disconnectSocket: () => {
     const { socket } = get()
     if (socket?.connected) {

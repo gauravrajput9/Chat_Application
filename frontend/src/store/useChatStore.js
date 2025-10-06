@@ -72,7 +72,7 @@ const useChatStore = create((set, get) => ({
     const tempId = `temp-${Date.now()}`;
     const optimisticMessage = {
       _id: tempId,
-      senderId: authUser?.user._id,
+      senderId: authUser?._id,
       receiverId,
       text,
       image,
@@ -115,12 +115,12 @@ subscribeToNewMessage: () => {
     const { selectedUser, isSoundEnabled } = get();
     const { authUser } = useAuthStore.getState();
     
-    if (!authUser?.user?._id) return;
+    if (!authUser?._id) return;
 
     // Check if message is for any conversation involving current user
     const isForCurrentUser = 
-      newMessage.senderId === authUser.user._id || 
-      newMessage.receiverId === authUser.user._id;
+      newMessage.senderId === authUser._id || 
+      newMessage.receiverId === authUser._id;
 
     if (isForCurrentUser) {
       // Update messages using functional update
@@ -136,7 +136,7 @@ subscribeToNewMessage: () => {
       });
 
       // Play notification sound for incoming messages (not sent by current user)
-      if (isSoundEnabled && newMessage.senderId !== authUser.user._id) {
+      if (isSoundEnabled && newMessage.senderId !== authUser._id) {
         const notificationSound = new Audio("/sounds/notification.mp3");
         notificationSound.currentTime = 0;
         notificationSound

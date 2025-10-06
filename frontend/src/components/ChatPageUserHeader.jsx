@@ -22,7 +22,7 @@ const ChatPageUserHeader = () => {
   const { authUser, logout, onlineUsers, setAuthUser } = useAuthStore();
 
   const [username, setUserName] = React.useState(
-    authUser?.user?.fullName || "User"
+    authUser?.fullName || "User"
   );
 
   const handleAvatarClick = () => fileInputRef.current.click();
@@ -65,12 +65,12 @@ const ChatPageUserHeader = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setPreviousImage(authUser?.user?.profilePic || null);
+    setPreviousImage(authUser?.profilePic || null);
 
     const formData = new FormData();
     formData.append("profilePic", file); // must match multer field name
-    formData.append("fullName", authUser.user.fullName);
-    formData.append("email", authUser.user.email);
+    formData.append("fullName", authUser.fullName);
+    formData.append("email", authUser.email);
 
     UpdateUserMutation.mutate(formData);
   };
@@ -86,7 +86,7 @@ const ChatPageUserHeader = () => {
     window.addEventListener("keydown", handleEscapePress);
   });
 
-  const isOnline = onlineUsers?.includes(authUser?.user?._id);
+  const isOnline = onlineUsers?.includes(authUser?._id);
 
   return (
     <div className="flex items-center justify-between bg-slate-700 p-3 rounded-xl shadow">
@@ -104,9 +104,9 @@ const ChatPageUserHeader = () => {
               alt="avatar"
               className="w-full h-full object-cover"
             />
-          ) : authUser?.user?.profilePic ? (
+          ) : authUser?.profilePic ? (
             <img
-              src={authUser.user.profilePic}
+              src={authUser.profilePic}
               alt="avatar"
               className="w-full h-full object-cover"
             />
@@ -131,7 +131,7 @@ const ChatPageUserHeader = () => {
         {/* Username + Online text */}
         <div className="flex flex-col">
           <span className="font-semibold text-white">
-            {username || authUser?.user?.fullName || "User"}
+            {username || authUser?.fullName || "User"}
           </span>
           {isOnline && (
             <span className="text-green-400 text-sm font-medium">Online</span>

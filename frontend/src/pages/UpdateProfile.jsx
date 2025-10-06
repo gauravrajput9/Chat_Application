@@ -18,11 +18,11 @@ const UpdateProfile = () => {
 
   // ✅ Pre-fill data when authUser is available
   useEffect(() => {
-    if (authUser?.user) {
+    if (authUser) {
       setFormData({
-        fullName: authUser.user.fullName || "",
-        email: authUser.user.email || "",
-        profilePic: authUser.user.profilePic || "",
+        fullName: authUser.fullName || "",
+        email: authUser.email || "",
+        profilePic: authUser.profilePic || "",
       });
     }
   }, [authUser]);
