@@ -11,6 +11,7 @@ export const axiosInstance = axios.create({
 // user routes
 export const loginUser = async (data) => {
     const res = await axiosInstance.post("/auth/login", data)
+    console.log(res.data)
     return res.data
 }
 

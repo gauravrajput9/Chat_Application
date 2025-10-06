@@ -18,11 +18,12 @@ export default function Login() {
   const { isError, isPending, mutate } = useMutation({
     mutationFn: (userData) => loginUser(userData),
     onSuccess: ({ user, message }) => {
-      setAuthUser(user); // store only the user object
+      setAuthUser(user); // now only the user object
       toast.success(message || "Login successful!");
       connectSocket();
       navigate("/");
     },
+
     onError: (error) => {
       console.log("Login error: ", error);
       const message = error.response?.data?.message || "Login failed!";
