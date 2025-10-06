@@ -83,7 +83,7 @@ export default function Navbar() {
                   alt="User"
                   className="w-8 h-8 rounded-full border-2 border-blue-400/50"
                 />
-                <span className="text-white font-medium">{authUser.user?.fullName || authUser.name}</span>
+                <span className="text-white font-medium">{authUser?.fullName }</span>
                 <svg
                   className={`w-4 h-4 ml-1 transition-transform duration-300 ${
                     isOpen ? "rotate-180" : "rotate-0"
@@ -192,7 +192,7 @@ export default function Navbar() {
                   alt="User"
                   className="w-10 h-10 rounded-full border-2 border-blue-400/50"
                 />
-                <span className="text-white font-medium">{authUser.user?.fullName || authUser.name}</span>
+                <span className="text-white font-medium">{authUser?.fullName }</span>
               </div>
               <Link
                 to="/profile"
