@@ -1,5 +1,5 @@
 import http from "http";
-import {  Server } from "socket.io"
+import { Server } from "socket.io"
 import express from "express"
 import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 
@@ -9,10 +9,16 @@ const server = http.createServer(app)
 
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URL,
+        origin: [
+            process.env.CLIENT_URL,
+            "https://chat-application-1-imbt.onrender.com", // frontend
+            "http://localhost:5173",
+            "http://localhost:3000"
+        ],
         credentials: true
     }
-})
+});
+
 
 io.use(socketAuthMiddleware)
 
@@ -22,7 +28,7 @@ io.use(socketAuthMiddleware)
 const userSocketsMap = {}
 
 
-export const getReceiverSocketId = (userId) =>{
+export const getReceiverSocketId = (userId) => {
     return userSocketsMap[userId]
 }
 
@@ -43,4 +49,4 @@ io.on("connection", (socket) => {
 })
 
 
-export {server, io, app}
+export { server, io, app }
