@@ -17,10 +17,10 @@ export default function Login() {
 
   const { isError, isPending, mutate } = useMutation({
     mutationFn: (userData) => loginUser(userData),
-    onSuccess: (data) => {
-      setAuthUser(data);
-      toast.success("Login successful!");
-      connectSocket()
+    onSuccess: ({ user, message }) => {
+      setAuthUser(user); // store only the user object
+      toast.success(message || "Login successful!");
+      connectSocket();
       navigate("/");
     },
     onError: (error) => {
@@ -56,7 +56,7 @@ export default function Login() {
         <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
       </div>
-      
+
       <div className="relative w-full max-w-6xl glass-effect rounded-3xl shadow-2xl overflow-hidden fade-in">
         <div className="grid lg:grid-cols-2 min-h-[600px]">
           {/* Left side - Form */}
@@ -70,11 +70,13 @@ export default function Login() {
                 <h2 className="text-3xl font-bold mb-2">Welcome Back</h2>
                 <p className="text-gray-400">Sign in to continue to ChatFlow</p>
               </div>
-              
+
               <form onSubmit={handleLoginFormSubmit} className="space-y-6">
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">Email Address</label>
+                  <label className="text-sm font-medium text-gray-300">
+                    Email Address
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Mail className="w-5 h-5 text-gray-400" />
@@ -97,7 +99,9 @@ export default function Login() {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">Password</label>
+                  <label className="text-sm font-medium text-gray-300">
+                    Password
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Lock className="w-5 h-5 text-gray-400" />
@@ -119,7 +123,7 @@ export default function Login() {
                 </div>
 
                 {/* Submit Button */}
-                <button 
+                <button
                   type="submit"
                   disabled={isPending}
                   className="group w-full py-4 px-6 gradient-accent hover:gradient-accent-hover rounded-2xl font-semibold smooth-transition hover-lift hover-glow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -137,11 +141,14 @@ export default function Login() {
                   )}
                 </button>
               </form>
-              
+
               <div className="text-center mt-8">
                 <p className="text-gray-400">
                   Don't have an account?{" "}
-                  <Link to="/signup" className="text-blue-400 hover:text-blue-300 font-medium smooth-transition">
+                  <Link
+                    to="/signup"
+                    className="text-blue-400 hover:text-blue-300 font-medium smooth-transition"
+                  >
                     Create one
                   </Link>
                 </p>
@@ -157,13 +164,19 @@ export default function Login() {
               <div className="absolute top-32 right-16 w-12 h-12 border border-purple-400 rounded-lg rotate-45"></div>
               <div className="absolute bottom-20 left-20 w-16 h-16 border border-green-400 rounded-full"></div>
             </div>
-            
-            <div className="relative text-center fade-in" style={{ animationDelay: '0.3s' }}>
+
+            <div
+              className="relative text-center fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
               {/* Icon */}
               <div className="w-24 h-24 gradient-accent rounded-3xl flex items-center justify-center mb-8 mx-auto hover-lift smooth-transition">
-                <MessageCircle className="w-12 h-12 text-white" strokeWidth={1.5} />
+                <MessageCircle
+                  className="w-12 h-12 text-white"
+                  strokeWidth={1.5}
+                />
               </div>
-              
+
               {/* Illustration */}
               <div className="mb-8">
                 <img
@@ -173,25 +186,25 @@ export default function Login() {
                 />
               </div>
 
-              <h3 className="text-2xl font-bold mb-4">
-                Secure & Private
-              </h3>
+              <h3 className="text-2xl font-bold mb-4">Secure & Private</h3>
               <p className="text-gray-400 text-lg leading-relaxed max-w-sm mx-auto">
                 Your conversations are protected with end-to-end encryption
               </p>
-              
+
               {/* Features */}
               <div className="grid grid-cols-3 gap-4 mt-8">
-                {['Secure', 'Fast', 'Reliable'].map((feature, index) => (
-                  <div 
-                    key={index} 
+                {["Secure", "Fast", "Reliable"].map((feature, index) => (
+                  <div
+                    key={index}
                     className="glass-effect rounded-xl p-3 fade-in"
                     style={{ animationDelay: `${0.5 + index * 0.1}s` }}
                   >
                     <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mb-2 mx-auto">
                       <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                     </div>
-                    <p className="text-xs text-gray-300 font-medium">{feature}</p>
+                    <p className="text-xs text-gray-300 font-medium">
+                      {feature}
+                    </p>
                   </div>
                 ))}
               </div>
