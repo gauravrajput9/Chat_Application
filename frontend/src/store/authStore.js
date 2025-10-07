@@ -35,20 +35,20 @@ export const useAuthStore = create((set, get) => ({
       } catch (error) {
         retryCount++;
         console.log(`❌ Auth check failed (attempt ${retryCount}/${maxRetries}):`, error.message);
-        
+
         // Check if it's a 502/503 error (backend sleeping) or network error
-        const isBackendSleeping = 
-          error.response?.status === 502 || 
-          error.response?.status === 503 || 
+        const isBackendSleeping =
+          error.response?.status === 502 ||
+          error.response?.status === 503 ||
           error.code === 'ERR_NETWORK';
 
         if (isBackendSleeping && retryCount < maxRetries) {
           const delay = Math.min(5000 * retryCount, 15000); // 5s, 10s, 15s delays
-          console.log(`😴 Backend seems to be sleeping. Retrying in ${delay/1000}s...`);
+          console.log(`😴 Backend seems to be sleeping. Retrying in ${delay / 1000}s...`);
           setTimeout(tryCheckAuth, delay);
           return;
         }
-        
+
         console.log("Error checking Auth: ", error);
       }
     };
@@ -98,6 +98,17 @@ export const useAuthStore = create((set, get) => ({
       console.log("Online Users from socket: ", users)
       set({ onlineUsers: users })
     })
+
+    socket.on("user_connected", (newUser) => {
+      console.log("👤 New user connected:", newUser);
+      // Option 1: Trigger UI refresh
+      window.dispatchEvent(new Event("refreshContacts"));
+    });
+
+    socket.on("user_disconnected", ({ userId }) => {
+      console.log("🚪 User disconnected:", userId);
+      window.dispatchEvent(new Event("refreshContacts"));
+    });
   },
 
   connectSocket: () => {
