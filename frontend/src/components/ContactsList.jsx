@@ -113,3 +113,38 @@ const ContactsList = () => {
 };
 
 export default ContactsList;
+
+const SkeletonContact = ({ index = 0 }) => {
+  return (
+    <div
+      className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800/40 border border-transparent fade-in"
+      style={{ animationDelay: `${index * 0.1}s` }}
+    >
+      {/* Avatar */}
+      <div className="relative flex-shrink-0">
+        <div className="w-12 h-12 rounded-full skeleton ring-2 ring-slate-600" />
+        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full skeleton" />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="h-5 bg-slate-600 rounded skeleton w-32" />
+          <div className="h-5 bg-slate-600 rounded skeleton w-16" />
+        </div>
+        <div className="h-3 bg-slate-600 rounded skeleton w-24" />
+      </div>
+    </div>
+  );
+};
+
+export const LoaderSkeletonContacts = ({ count = 6 }) => {
+  return (
+    <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-200px)] w-full custom-scrollbar pr-2">
+      {Array.from({ length: count }).map((_, index) => (
+        <SkeletonContact key={index} index={index} />
+      ))}
+    </div>
+  );
+};
+

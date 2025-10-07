@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import useChatStore from "../store/useChatStore";
-import { LoaderSkeletonContacts } from "./ContactsList";
 import NoChatsFound from "./NoChatsFound";
 import { useAuthStore } from "../store/authStore";
+import { LoaderSkeletonContacts } from "./ContactsList";
 
 const ChatList = () => {
   const { chats, setAllChats, isUsersLoading, setSelectedUser } =
@@ -17,7 +17,7 @@ const ChatList = () => {
   }, [chats, setAllChats]);
 
   if (isUsersLoading) {
-    return <LoaderSkeletonContacts />;
+    return <LoaderSkeletonContacts/>;
   }
   if (chats?.chatParteners?.length === 0) {
     return <NoChatsFound />;
