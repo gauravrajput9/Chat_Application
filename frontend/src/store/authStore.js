@@ -2,7 +2,8 @@ import { create } from 'zustand'
 import { axiosInstance } from '../lib/axios.js'
 import { io } from "socket.io-client"
 
-const BASE_URL = "https://chat-application-rsxd.onrender.com"
+// Use env-configured socket URL in production; fallback to same-origin
+const SOCKET_URL = import.meta?.env?.VITE_SOCKET_URL || window.location.origin
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -64,7 +65,7 @@ export const useAuthStore = create((set, get) => ({
     }
 
     // Enhanced socket configuration for mobile compatibility
-    const socket = io(BASE_URL, {
+    const socket = io(SOCKET_URL, {
       transports: ["websocket", "polling"], // Enable polling fallback for mobile
       withCredentials: true,
       timeout: 30000, // Longer timeout for mobile networks

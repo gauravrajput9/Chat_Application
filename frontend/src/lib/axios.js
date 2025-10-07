@@ -2,12 +2,14 @@ import axios from "axios"
 
 axios.defaults.withCredentials = true;
 
-
+// Prefer env-configured API URL in production; fallback to same-origin /api
+const API_BASE_URL =
+    import.meta?.env?.VITE_API_URL || `${window.location.origin}/api`;
 
 export const axiosInstance = axios.create({
-    baseURL: "https://chat-application-rsxd.onrender.com/api",
+    baseURL: API_BASE_URL,
     withCredentials: true,
-    timeout: 30000, 
+    timeout: 30000,
 });
 
 // Add request interceptor for better mobile debugging
