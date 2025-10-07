@@ -2,9 +2,17 @@ import axios from "axios"
 
 axios.defaults.withCredentials = true;
 
-// Prefer env-configured API URL in production; fallback to same-origin /api
-const API_BASE_URL =
-    import.meta?.env?.VITE_API_URL || `${window.location.origin}/api`;
+// Prefer env-configured API URL; add safe host-based fallback for production
+let API_BASE_URL = import.meta?.env?.VITE_API_URL;
+
+if (!API_BASE_URL) {
+    const host = window.location.host;
+    if (host === "chat-application-1-imbt.onrender.com") {
+        API_BASE_URL = "https://chat-application-rsxd.onrender.com/api";
+    } else {
+        API_BASE_URL = `${window.location.origin}/api`;
+    }
+}
 
 export const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
