@@ -6,17 +6,25 @@ import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  process.env.CLIENT_URL?.replace(/\/$/, ""),
+  "https://chat-application-1-imbt.onrender.com",
+  "https://chat-application-rsxd.onrender.com",
+  "http://localhost:5173",
+  "http://localhost:3000",
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: [
-      process.env.CLIENT_URL,
-      "https://chat-application-1-imbt.onrender.com",
-      "https://chat-application-rsxd.onrender.com",
-      "http://localhost:5173",
-      "http://localhost:3000",
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const normalized = origin.replace(/\/$/, "");
+      if (allowedOrigins.includes(normalized)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   },
+  transports: ["websocket", "polling"],
 });
 
 // Auth middleware

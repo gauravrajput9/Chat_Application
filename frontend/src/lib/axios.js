@@ -2,8 +2,15 @@ import axios from "axios"
 
 axios.defaults.withCredentials = true;
 
+const apiBaseFromEnv = (import.meta.env && import.meta.env.VITE_API_URL)
+  ? import.meta.env.VITE_API_URL.trim().replace(/\/$/, "")
+  : "";
+const apiBaseFromWindow = typeof window !== "undefined"
+  ? `${window.location.origin.replace(/\/$/, "")}/api`
+  : "";
+
 export const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "https://chat-application-rsxd.onrender.com/api",
+    baseURL: apiBaseFromEnv || apiBaseFromWindow || "http://localhost:3000/api",
     withCredentials: true,
     timeout: 30000, 
 });
