@@ -30,7 +30,7 @@ export default function Login() {
       console.log('Login successful:', user);
       setAuthUser(user); // now only the user object
       toast.success(message || "Login successful!");
-      // Add small delay before connecting socket to ensure auth is set
+
       setTimeout(() => {
         connectSocket();
       }, 100);
