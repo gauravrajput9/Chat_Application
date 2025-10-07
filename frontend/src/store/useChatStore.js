@@ -3,59 +3,39 @@ import { axiosInstance } from "../lib/axios";
 import { toast } from "react-toastify";
 import { useAuthStore } from "./authStore";
 
-
 const useChatStore = create((set, get) => ({
   allContacts: [],
   chats: [],
   messages: [],
-  activeTab: "chats",
   selectedUser: null,
+  activeTab: "chats",
+  messageText: "",
   isUsersLoading: false,
   isMessagesLoading: false,
   isSoundEnabled: JSON.parse(localStorage.getItem("isSoundEnabled")) === true,
 
+  // -----------------------------
+  // Basic setters
+  // -----------------------------
+  setSelectedUser: (user) => set({ selectedUser: user }),
+  setMessageText: (text) => set({ messageText: text }),
+  setActiveTab: (tab) => set({ activeTab: tab }),
   toggleSound: () => {
     localStorage.setItem("isSoundEnabled", !get().isSoundEnabled);
     set({ isSoundEnabled: !get().isSoundEnabled });
   },
-  setActiveTab: (tab) => set({ activeTab: tab }),
-  setSelectedUser: (selectedUser) => set({ selectedUser }),
 
+  // -----------------------------
+  // Fetching contacts & chats
+  // -----------------------------
   setAllContacts: async (forceRefresh = false) => {
     if (get().allContacts.length > 0 && !forceRefresh) return;
-
     set({ isUsersLoading: true });
-    let retryCount = 0;
-    const maxRetries = 3;
-
-    const fetchContacts = async () => {
-      try {
-        console.log('Fetching contacts... (attempt', retryCount + 1, ')');
-        const res = await axiosInstance.get("/message/getAllContacts");
-        set({ allContacts: res.data.users });
-        console.log('Contacts loaded successfully:', res.data.users?.length || 0, 'contacts');
-      } catch (error) {
-        retryCount++;
-        console.error(`Error fetching contacts (attempt ${retryCount}):`, error);
-        
-        // Retry for network errors on mobile
-        if (error.code === 'NETWORK_ERROR' && retryCount < maxRetries) {
-          console.log(`Retrying in ${retryCount * 1000}ms...`);
-          setTimeout(fetchContacts, retryCount * 1000);
-          return;
-        }
-        
-        // Show appropriate error message
-        const message = error.code === 'NETWORK_ERROR' 
-          ? "Network error. Please check your connection."
-          : error.response?.data?.message || "Failed to fetch contacts";
-        toast.error(message);
-        console.log("Error While Fetching contacts in Store: ", error);
-      }
-    };
-
     try {
-      await fetchContacts();
+      const res = await axiosInstance.get("/message/getAllContacts");
+      set({ allContacts: res.data.users });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to fetch contacts");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -66,40 +46,56 @@ const useChatStore = create((set, get) => ({
     try {
       const res = await axiosInstance.get("/message/chats");
       set({ chats: res.data });
-    } catch (error) {
-      console.log("Chat Fetching error from Store: ", error.message);
-      toast.error("Error Fetching The Chats");
+    } catch {
+      toast.error("Error fetching chats");
     } finally {
       set({ isUsersLoading: false });
     }
   },
 
+  // -----------------------------
+  // Fetch messages
+  // -----------------------------
   getMessagesByUserId: async (userId) => {
     set({ isMessagesLoading: true });
     try {
       const res = await axiosInstance.get(`/message/${userId}`);
-      set({ messages: res.data.messages });
-    } catch (error) {
-      console.log("Error fetching the chats: ", error.message);
-      toast.error("Something Went Wrong");
+      const serverMessages = res.data.messages;
+
+      // preserve optimistic messages for this user
+      const optimisticMessages = get().messages.filter(
+        (msg) => msg.isOptimistic && msg.receiverId === userId
+      );
+
+      set({ messages: [...serverMessages, ...optimisticMessages] });
+    } catch {
+      toast.error("Failed to fetch messages");
     } finally {
       set({ isMessagesLoading: false });
     }
   },
 
-  sendMessage: async (data, receiverId) => {
+  refreshMessages: () => {
+    const { selectedUser } = get();
+    if (selectedUser) get().getMessagesByUserId(selectedUser._id);
+  },
+
+  // -----------------------------
+  // Send messages
+  // -----------------------------
+  sendMessage: async (formData, receiverId) => {
+    if (!receiverId) return;
     const { messages } = get();
     const { authUser } = useAuthStore.getState();
+    const text = formData.get("text");
+    const image = formData.get("image");
 
-    const text = data.get("text");
-    const image = data.get("image");
-
-    console.log('📤 Sending message:', { text, receiverId, senderId: authUser?._id });
+    if (!text && !image) return;
 
     const tempId = `temp-${Date.now()}`;
     const optimisticMessage = {
       _id: tempId,
-      senderId: authUser?._id,
+      senderId: authUser._id,
       receiverId,
       text,
       image: image ? URL.createObjectURL(image) : null,
@@ -107,141 +103,86 @@ const useChatStore = create((set, get) => ({
       isOptimistic: true,
     };
 
-    // Add optimistic message immediately
     set({ messages: [...messages, optimisticMessage] });
-    console.log('✅ Added optimistic message to UI');
 
     try {
-      const res = await axiosInstance.post(`/message/send/${receiverId}`, data);
+      const res = await axiosInstance.post(`/message/send/${receiverId}`, formData);
       const newMessage = res.data.newMessage;
-      console.log('📥 Received response from server:', newMessage);
 
-      // Replace optimistic message with real message from server
       set({
-        messages: get().messages.map((msg) => {
-          if (msg._id === tempId) {
-            console.log('🔄 Replacing optimistic message with server response');
-            return newMessage;
-          }
-          return msg;
-        }),
+        messages: get().messages.map((msg) => (msg._id === tempId ? newMessage : msg)),
       });
-    } catch (error) {
-      // Remove optimistic message on error
-      set({
-        messages: get().messages.filter((msg) => msg._id !== tempId),
-      });
-      console.error("Message Sending Error", error.message);
-      toast.error(error.response?.data?.message || "Failed to send message");
+    } catch {
+      set({ messages: get().messages.filter((msg) => msg._id !== tempId) });
+      toast.error("Failed to send message");
     }
   },
 
-subscribeToNewMessage: () => {
-  const { socket } = useAuthStore.getState();
-  if (!socket?.connected) {
-    console.warn("❌ Socket not connected, cannot subscribe to messages");
-    return;
-  }
+  sendImageMessage: async (file) => {
+    const { selectedUser } = get();
+    if (!selectedUser) return;
 
-  // Remove existing listener to prevent duplicates
-  socket.off("newMessage");
-  
-  socket.on("newMessage", (newMessage) => {
-    console.log("📨 New message received:", newMessage);
-    const { selectedUser, isSoundEnabled } = get();
-    const { authUser } = useAuthStore.getState();
-    
-    if (!authUser?._id) return;
+    const formData = new FormData();
+    formData.append("image", file);
+    await get().sendMessage(formData, selectedUser._id);
+  },
 
-    // Check if message is for any conversation involving current user
-    const isForCurrentUser = 
-      newMessage.senderId === authUser._id || 
-      newMessage.receiverId === authUser._id;
+  // -----------------------------
+  // Real-time socket handling
+  // -----------------------------
+  subscribeToNewMessage: () => {
+    const { socket } = useAuthStore.getState();
+    if (!socket?.connected) return;
 
-    if (isForCurrentUser) {
-      // Update messages using functional update
-      set((state) => {
-        // Check if this is replacing an optimistic message (for sender)
-        const optimisticIndex = state.messages.findIndex(msg => 
-          msg.isOptimistic && 
-          msg.senderId === newMessage.senderId && 
+    socket.off("newMessage");
+    socket.on("newMessage", (newMessage) => {
+      const { authUser } = useAuthStore.getState();
+      if (!authUser?._id) return;
+
+      const { messages } = get();
+      const optimisticIndex = messages.findIndex(
+        (msg) =>
+          msg.isOptimistic &&
+          msg.senderId === newMessage.senderId &&
           msg.receiverId === newMessage.receiverId &&
           msg.text === newMessage.text
-        );
-        
-        // If we found an optimistic message, replace it
-        if (optimisticIndex !== -1) {
-          const updatedMessages = [...state.messages];
-          updatedMessages[optimisticIndex] = newMessage;
-          console.log('✅ Replaced optimistic message with real message');
-          return {
-            ...state,
-            messages: updatedMessages
-          };
-        }
-        
-        // Check if message already exists (avoid duplicates)
-        const existingMessage = state.messages.find(msg => msg._id === newMessage._id);
-        if (existingMessage) {
-          console.log('⚠️ Message already exists, skipping:', newMessage._id);
-          return state;
-        }
-        
-        // Add new message
-        console.log('➕ Adding new message to chat');
-        return {
-          ...state,
-          messages: [...state.messages, newMessage]
-        };
-      });
+      );
 
-      // Play notification sound for incoming messages (not sent by current user)
-      if (isSoundEnabled && newMessage.senderId !== authUser._id) {
-        const notificationSound = new Audio("/sounds/notification.mp3");
-        notificationSound.currentTime = 0;
-        notificationSound
-          .play()
-          .catch((error) => console.log("Error playing Sound", error.message));
+      let updatedMessages = [...messages];
+      if (optimisticIndex !== -1) {
+        updatedMessages[optimisticIndex] = newMessage;
+      } else if (!messages.find((m) => m._id === newMessage._id)) {
+        updatedMessages.push(newMessage);
       }
-    }
-  });
-  
-  console.log("✅ Subscribed to new messages");
-},
 
+      set({ messages: updatedMessages });
 
-
+      if (get().isSoundEnabled && newMessage.senderId !== authUser._id) {
+        const audio = new Audio("/sounds/notification.mp3");
+        audio.play().catch(() => {});
+      }
+    });
+  },
 
   unSubscribeFromMessage: () => {
     const { socket } = useAuthStore.getState();
-    if (socket) {
-      socket.off("newMessage");
-      console.log("🔇 Unsubscribed from messages");
-    }
+    socket?.off("newMessage");
   },
 
-  // Add function to clear chat state on logout
-  clearChatState: () => {
+  // -----------------------------
+  // Reset store
+  // -----------------------------
+  clearChatState: () =>
     set({
       allContacts: [],
       chats: [],
       messages: [],
       selectedUser: null,
+      messageText: "",
       activeTab: "chats",
       isUsersLoading: false,
-      isMessagesLoading: false
-    });
-    console.log("🧹 Chat state cleared");
-  },
-
-  // Add function to refresh messages when switching users
-  refreshMessages: () => {
-    const { selectedUser } = get();
-    if (selectedUser) {
-      console.log("🔄 Refreshing messages for user:", selectedUser.fullName);
-      get().getMessagesByUserId(selectedUser._id);
-    }
-  },
+      isMessagesLoading: false,
+    }),
 }));
 
 export default useChatStore;

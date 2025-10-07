@@ -5,10 +5,7 @@ axios.defaults.withCredentials = true;
 export const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "https://chat-application-rsxd.onrender.com/api",
     withCredentials: true,
-    timeout: 30000, // 30 second timeout for slower mobile networks
-    headers: { 
-        "Content-Type": "application/json"
-    },
+    timeout: 30000, 
 });
 
 // Add request interceptor for better mobile debugging

@@ -1,53 +1,60 @@
 import http from "http";
-import { Server } from "socket.io"
-import express from "express"
+import { Server } from "socket.io";
+import express from "express";
 import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 
-const app = express()
-
-const server = http.createServer(app)
+const app = express();
+const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
     origin: [
       process.env.CLIENT_URL,
       "https://chat-application-1-imbt.onrender.com",
-      "https://chat-application-rsxd.onrender.com", // ✅ add backend domain
+      "https://chat-application-rsxd.onrender.com",
       "http://localhost:5173",
-      "http://localhost:3000"
+      "http://localhost:3000",
     ],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
+// Auth middleware
+io.use(socketAuthMiddleware);
 
-io.use(socketAuthMiddleware)
+// Map to store online user sockets
+const userSocketsMap = {};
 
-
-
-// for storing the online users
-const userSocketsMap = {}
-
-
+// Getter for receiver socket ID
 export const getReceiverSocketId = (userId) => {
-    return userSocketsMap[userId]
-}
+  if (!userId) return undefined;
+  const id = userSocketsMap[userId.toString()];
+  if (!id) {
+    console.log("No socket found for user:", userId);
+  }
+  return id;
+};
 
+// Socket connection
 io.on("connection", (socket) => {
-    console.log("A user Connected", socket.user.fullName)
+  if (!socket.user?._id) return;
+  console.log(socket.user?._id)
 
-    const userID = socket.userId
-    userSocketsMap[userID] = socket.id
+  const userId = socket.user._id.toString();
+  console.log("Current userSocketsMap:", userSocketsMap);
 
-    io.emit("getAllOnlineUsers", Object.keys(userSocketsMap))
+  userSocketsMap[userId] = socket.id;
 
-    socket.on("disconnect", () => {
-        console.log("A user disconnected", socket.user.fullName)
-        delete userSocketsMap[userID]
-        io.emit("getAllOnlineUsers", Object.keys(userSocketsMap))
+  console.log("A user connected:", socket.user.fullName, "ID:", userId, "socket:", socket.id);
 
-    })
-})
+  // Broadcast online users
+  io.emit("getAllOnlineUsers", Object.keys(userSocketsMap));
 
+  socket.on("disconnect", () => {
+    console.log("A user disconnected:", socket.user.fullName);
+    delete userSocketsMap[userId];
+    io.emit("getAllOnlineUsers", Object.keys(userSocketsMap));
+  });
+});
 
-export { server, io, app }
+export { server, io, app };

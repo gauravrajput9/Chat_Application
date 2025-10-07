@@ -69,36 +69,34 @@ export const sendMessage = async (req, res) => {
         const newMessage = await Message.create({
             receiverId,
             senderId,
-            image: imageUrl,
             text,
+            image: imageUrl,
         });
 
-        // Get socket IDs for both sender and receiver
-        const receiverSocketId = getReceiverSocketId(receiverId);
-        const senderSocketId = getReceiverSocketId(senderId);
-        
-        console.log('Receiver socket ID:', receiverSocketId);
-        console.log('Sender socket ID:', senderSocketId);
+        // normalize ids to strings for frontend equality checks
+        const safeMessage = {
+            ...newMessage.toObject(),
+            receiverId: newMessage.receiverId?.toString(),
+            senderId: newMessage.senderId?.toString(),
+        };
 
-        // Emit to receiver if online
-        if(receiverSocketId){
-            io.to(receiverSocketId).emit("newMessage", newMessage);
-            console.log('✅ Message sent to receiver');
-        }
-        
-        // Also emit to sender to confirm message was sent
-        if(senderSocketId){
-            io.to(senderSocketId).emit("newMessage", newMessage);
-            console.log('✅ Message confirmation sent to sender');
-        }
+        // Get socket IDs
+        const receiverSocketId = getReceiverSocketId(receiverId.toString());
+        const senderSocketId = getReceiverSocketId(senderId.toString());
 
-        res.status(201).json({
-            message: "Message sent successfully",
-            newMessage,
-        });
+        console.log("Receiver socket ID:", receiverSocketId);
+        console.log("Sender socket ID:", senderSocketId);
+
+        // Emit to receiver
+        if (receiverSocketId) io.to(receiverSocketId).emit("newMessage", safeMessage);
+
+        // Emit to sender
+        if (senderSocketId) io.to(senderSocketId).emit("newMessage", safeMessage);
+
+        res.status(201).json({ message: "Message sent", newMessage: safeMessage });
     } catch (error) {
-        console.error("Message sending Error:", error);
-        res.status(500).json({ error: "Internal Server Error", details: error.message });
+        console.error("Message sending error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
@@ -110,7 +108,7 @@ export const getChatParteners = async (req, res) => {
         const messages = await Message.find({
             $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }],
         });
-        
+
         console.log("Found messages:", messages.length);
 
         const chatPartenerIds = [
@@ -127,7 +125,7 @@ export const getChatParteners = async (req, res) => {
                     .filter(id => id !== null && id !== loggedInUserId.toString()) // Remove nulls and logged-in user
             ),
         ];
-        
+
         console.log("Chat partner IDs:", chatPartenerIds);
 
         if (chatPartenerIds.length === 0) {

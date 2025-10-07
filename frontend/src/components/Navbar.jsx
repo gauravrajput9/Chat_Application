@@ -35,7 +35,6 @@ export default function Navbar() {
         // Navigate and show success message
         navigate("/login");
         toast.success("Logged out successfully");
-        console.log("👋 User logged out successfully");
       })
       .catch((err) => {
         console.error("Logout failed:", err);
