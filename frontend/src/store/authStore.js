@@ -2,8 +2,16 @@ import { create } from 'zustand'
 import { axiosInstance } from '../lib/axios.js'
 import { io } from "socket.io-client"
 
-// Use env-configured socket URL in production; fallback to same-origin
-const SOCKET_URL = import.meta?.env?.VITE_SOCKET_URL || window.location.origin
+// Use env-configured socket URL; add safe host-based fallback for production
+let SOCKET_URL = import.meta?.env?.VITE_SOCKET_URL;
+if (!SOCKET_URL) {
+  const host = window.location.host;
+  if (host === "chat-application-1-imbt.onrender.com") {
+    SOCKET_URL = "https://chat-application-rsxd.onrender.com";
+  } else {
+    SOCKET_URL = window.location.origin;
+  }
+}
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
